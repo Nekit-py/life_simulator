@@ -21,19 +21,6 @@ pub enum Entity {
     Wasteland(Wasteland),
     Virus(Virus),
 }
-impl Entity {
-    fn random(rng: &mut ThreadRng, point: Point) -> Entity {
-        let random_number = rng.gen_range(0..6);
-        match random_number {
-            1 => Entity::Boar(Boar::new(point)),
-            2 => Entity::Lion(Lion::new(point)),
-            3 => Entity::Meat(Meat::new(point)),
-            4 => Entity::Grass(Grass::new(point)),
-            5 => Entity::Virus(Virus::new(point)),
-            _ => Entity::Wasteland(Wasteland::new(point)),
-        }
-    }
-}
 
 impl fmt::Display for Entity {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
