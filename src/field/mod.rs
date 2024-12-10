@@ -1,7 +1,9 @@
 pub mod animals;
 pub mod food;
 pub mod other;
+pub mod traits;
 
+use crate::traits::Positionable;
 use animals::{Boar, Lion};
 use food::{Grass, Meat};
 use other::{Virus, Wasteland};
@@ -37,8 +39,8 @@ impl fmt::Display for Entity {
 
 #[derive(Clone, Copy)]
 pub struct Point {
-    x: usize,
-    y: usize,
+    pub x: usize,
+    pub y: usize,
 }
 
 impl fmt::Display for Point {
@@ -55,8 +57,8 @@ impl Point {
 }
 
 pub struct Field {
-    height: usize,
-    width: usize,
+    height: usize, //y
+    width: usize,  //x
     matrix: Vec<Vec<Entity>>,
 }
 
@@ -91,6 +93,10 @@ impl Field {
                 }
             }
         }
+    }
+    // pub fn locate(&mut self, position:)
+    pub fn size(&self) -> (usize, usize) {
+        (self.height, self.width)
     }
 }
 
