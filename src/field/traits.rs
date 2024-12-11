@@ -9,7 +9,7 @@ pub trait Positionable {
 }
 
 pub trait Movable {
-    fn availble_directions(&mut self, directions: Vec<Direction>) -> Option<Point>;
+    fn move_to(&mut self, directions: Vec<Direction>) -> Option<Point>;
     fn made_a_move(&mut self);
     fn mark_as_immovable(&mut self);
     fn is_moved(&self) -> bool;
@@ -25,8 +25,9 @@ pub trait LookAround: Positionable {
         let (height, width) = size;
         //Текущая точка кабана
         let cur_pos = self.get_position();
-        //текущие Координаты кабана
+        //текущие Координаты животного
         let (cur_x, cur_y) = cur_pos.coords();
+
         if cur_y > 0 {
             directions.push(Direction::Down)
         } else if cur_y < height {

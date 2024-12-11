@@ -1,4 +1,5 @@
 use crate::field::Point;
+use crate::traits::Positionable;
 use std::fmt;
 
 pub const VIRUS_VIEW: char = '🦠';
@@ -8,7 +9,7 @@ pub const WASTELAND_VIEW: char = '⬛';
 #[derive(Clone, Debug)]
 struct Object {
     view: char,
-    postition: Point,
+    position: Point,
 }
 
 impl fmt::Display for Object {
@@ -21,11 +22,17 @@ impl fmt::Display for Object {
 #[derive(Clone, Debug)]
 pub struct Virus(Object);
 impl Virus {
-    pub fn new(postition: Point) -> Self {
+    pub fn new(position: Point) -> Self {
         Self(Object {
             view: VIRUS_VIEW,
-            postition,
+            position,
         })
+    }
+}
+
+impl Positionable for Virus {
+    fn get_position(&self) -> Point {
+        self.0.position
     }
 }
 
@@ -39,11 +46,17 @@ impl fmt::Display for Virus {
 #[derive(Clone, Debug)]
 pub struct Wasteland(Object);
 impl Wasteland {
-    pub fn new(postition: Point) -> Self {
+    pub fn new(position: Point) -> Self {
         Self(Object {
             view: WASTELAND_VIEW,
-            postition,
+            position,
         })
+    }
+}
+
+impl Positionable for Wasteland {
+    fn get_position(&self) -> Point {
+        self.0.position
     }
 }
 

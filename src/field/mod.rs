@@ -92,8 +92,7 @@ impl Field {
                 match rng.gen_range(1..=100) {
                     1..=3 => self.matrix[y][x] = Entity::Virus(Virus::new(point)),
                     11..=13 => self.matrix[y][x] = Entity::Lion(Lion::new(point)),
-                    // 31..=40 => self.matrix[y][x] = Entity::Boar(Boar::new(point)),
-                    31..=50 => self.matrix[y][x] = Entity::Boar(Boar::new(point)),
+                    31..=40 => self.matrix[y][x] = Entity::Boar(Boar::new(point)),
                     71..=100 => self.matrix[y][x] = Entity::Grass(Grass::new(point)),
                     _ => self.matrix[y][x] = Entity::Wasteland(Wasteland::new(point)),
                 }
@@ -106,17 +105,19 @@ impl Field {
     //     (self.height, self.width)
     // }
 
-    pub fn assign_to_point<T: Positionable>(&mut self, entity: T) {
-        let destination_point = entity.get_position();
-        let (to_x, to_y) = destination_point.coords();
-        // self.matrix[to_y][to_x] = Entity
-    }
-
-    // pub fn get_by_point(&self, point: Point) -> &Entity {
-    pub fn get_by_coords(&self, x: usize, y: usize) -> &Entity {
-        // let (x, y) = point.coords();
-        &self.matrix[y][x]
-    }
+    // ///Назначить на точку
+    // pub fn assign_to_point<T: Positionable>(&mut self, entity: T) {
+    //     let destination_point = entity.get_position();
+    //     let (to_x, to_y) = destination_point.coords();
+    //     todo!();
+    //     // self.matrix[to_y][to_x] = Entity
+    // }
+    //
+    // // pub fn get_by_point(&self, point: Point) -> &Entity {
+    // pub fn get_by_coords(&self, x: usize, y: usize) -> &Entity {
+    //     // let (x, y) = point.coords();
+    //     &self.matrix[y][x]
+    // }
 
     pub fn start_new_life(&mut self) {
         for y in 0..self.height {
@@ -124,8 +125,7 @@ impl Field {
                 match self.matrix[y][x] {
                     Entity::Boar(ref mut boar) => {
                         let available_directions = { boar.look_around((self.height, self.width)) };
-                        println!("{:?}", available_directions);
-                        let move_to = boar.availble_directions(available_directions);
+                        let move_to = boar.move_to(available_directions);
                         if let Some(point_to_move) = move_to {
                             if !boar.is_moved() {
                                 let new_boar = Boar::new(point_to_move);

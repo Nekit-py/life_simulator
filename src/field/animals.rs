@@ -1,12 +1,12 @@
-const BOAR_VIEW: char = '🐗';
-const LION_VIEW: char = '🦁';
 use crate::field::Point;
 use crate::traits::{LookAround, Movable, Positionable};
-use crate::Field;
 use core::option::Option;
 use rand::prelude::SliceRandom;
 use rand::thread_rng;
 use std::fmt;
+
+const BOAR_VIEW: char = '🐗';
+const LION_VIEW: char = '🦁';
 
 ///Нпарвления вижения
 #[derive(Debug)]
@@ -60,7 +60,7 @@ impl Positionable for Boar {
 impl Movable for Boar {
     ///Следование в случайном направлении на 1 клетку
     ///возвращает опционально точку, в которую будет перемещено животное(если такая существует)
-    fn availble_directions(&mut self, directions: Vec<Direction>) -> Option<Point> {
+    fn move_to(&mut self, directions: Vec<Direction>) -> Option<Point> {
         if directions.is_empty() {
             return None;
         }
@@ -113,7 +113,7 @@ impl Lion {
     }
 }
 impl Movable for Lion {
-    fn availble_directions(&mut self, directions: Vec<Direction>) -> Option<Point> {
+    fn move_to(&mut self, directions: Vec<Direction>) -> Option<Point> {
         if directions.is_empty() {
             return None;
         }
