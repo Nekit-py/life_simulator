@@ -9,12 +9,14 @@ use rand::{rngs::ThreadRng, seq::SliceRandom};
 fn main() -> Result<(), std::io::Error> {
     let mut rng = thread_rng();
     // // let mut field = Field::new(50, 70);
-    let mut field = Field::new(3, 4);
+    let mut field = Field::new(2, 2);
     // let mut field = Field::new(1, 3);
     field.fill(&mut rng);
     println!("{}", field);
     field.start_new_life();
     println!("{}", field);
+    // println!("{:#?}", field);
+
     // println!("{:#?}", field);
 
     Ok(())
