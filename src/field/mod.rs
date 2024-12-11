@@ -119,6 +119,7 @@ impl Field {
     //     &self.matrix[y][x]
     // }
 
+    //Антипаттерн полиморфизму? + Рассмотреть мапу
     pub fn start_new_life(&mut self) {
         for y in 0..self.height {
             for x in 0..self.width {
