@@ -60,7 +60,7 @@ impl Positionable for Boar {
 impl Movable for Boar {
     ///Следование в случайном направлении на 1 клетку
     ///возвращает опционально точку, в которую будет перемещено животное(если такая существует)
-    fn go_to_direction(&mut self, directions: Vec<Direction>) -> Option<Point> {
+    fn availble_directions(&mut self, directions: Vec<Direction>) -> Option<Point> {
         if directions.is_empty() {
             return None;
         }
@@ -110,6 +110,34 @@ impl Lion {
             health: 15,
             hunger: 7,
         })
+    }
+}
+impl Movable for Lion {
+    fn availble_directions(&mut self, directions: Vec<Direction>) -> Option<Point> {
+        if directions.is_empty() {
+            return None;
+        }
+        let (cur_x, cur_y) = self.0.position.coords();
+        let mut rng = thread_rng();
+        let direction = directions.choose(&mut rng).unwrap();
+        match direction {
+            Direction::Up => Some(Point::new(cur_x, cur_y + 1)),
+            Direction::Down => Some(Point::new(cur_x, cur_y - 1)),
+            Direction::Left => Some(Point::new(cur_x - 1, cur_y)),
+            Direction::Right => Some(Point::new(cur_x + 1, cur_y)),
+        }
+    }
+
+    fn made_a_move(&mut self) {
+        self.0.shifted = true;
+    }
+
+    fn mark_as_immovable(&mut self) {
+        self.0.shifted = false;
+    }
+
+    fn is_moved(&self) -> bool {
+        self.0.shifted
     }
 }
 

@@ -9,7 +9,7 @@ pub trait Positionable {
 }
 
 pub trait Movable {
-    fn go_to_direction(&mut self, directions: Vec<Direction>) -> Option<Point>;
+    fn availble_directions(&mut self, directions: Vec<Direction>) -> Option<Point>;
     fn made_a_move(&mut self);
     fn mark_as_immovable(&mut self);
     fn is_moved(&self) -> bool;

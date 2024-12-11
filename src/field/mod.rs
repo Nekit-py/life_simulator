@@ -102,8 +102,14 @@ impl Field {
     }
 
     ///Получение размеров поля
-    pub fn size(&self) -> (usize, usize) {
-        (self.height, self.width)
+    // pub fn size(&self) -> (usize, usize) {
+    //     (self.height, self.width)
+    // }
+
+    pub fn assign_to_point<T: Positionable>(&mut self, entity: T) {
+        let destination_point = entity.get_position();
+        let (to_x, to_y) = destination_point.coords();
+        // self.matrix[to_y][to_x] = Entity
     }
 
     // pub fn get_by_point(&self, point: Point) -> &Entity {
@@ -112,33 +118,6 @@ impl Field {
         &self.matrix[y][x]
     }
 
-    // pub fn start_new_life(&mut self) {
-    //     for row in self.matrix.iter_mut() {
-    //         for entity in row.iter_mut() {
-    //             match entity {
-    //                 Entity::Boar(ref mut boar) => {
-    //                     let available_directions = { boar.look_around((self.height, self.width)) };
-    //                     println!("{:?}", available_directions);
-    //                     let move_to = boar.go_to_direction(available_directions);
-    //                     if let Some(point_to_move) = move_to {
-    //                         println!("cur_pos = {:?}", boar.get_position());
-    //                         if !boar.is_moved() {
-    //                             let new_boar = Boar::new(point_to_move);
-    //                             println!("after_move = {:?}", new_boar.get_position());
-    //                             // *entity = Entity::Boar(new_boar);
-    //                             *boar = new_boar;
-    //                             println!("{:?}", entity);
-    //                         } else {
-    //                             boar.mark_as_immovable();
-    //                         }
-    //                     }
-    //                 }
-    //                 _ => (),
-    //             }
-    //         }
-    //     }
-    // }
-
     pub fn start_new_life(&mut self) {
         for y in 0..self.height {
             for x in 0..self.width {
@@ -146,17 +125,14 @@ impl Field {
                     Entity::Boar(ref mut boar) => {
                         let available_directions = { boar.look_around((self.height, self.width)) };
                         println!("{:?}", available_directions);
-                        let move_to = boar.go_to_direction(available_directions);
+                        let move_to = boar.availble_directions(available_directions);
                         if let Some(point_to_move) = move_to {
-                            println!("cur_pos = {:?}", boar.get_position());
                             if !boar.is_moved() {
                                 let new_boar = Boar::new(point_to_move);
-                                println!("after_move = {:?}", new_boar.get_position());
                                 let (to_x, to_y) = point_to_move.coords();
                                 self.matrix[to_y][to_x] = Entity::Boar(new_boar);
                                 self.matrix[y][x] =
                                     Entity::Wasteland(Wasteland::new(Point::new(x, y)));
-                                println!("{:?}", self.matrix[y][x]);
                             } else {
                                 boar.mark_as_immovable();
                             }
