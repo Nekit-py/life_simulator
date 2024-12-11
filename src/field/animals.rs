@@ -1,18 +1,24 @@
 const BOAR_VIEW: char = '🐗';
 const LION_VIEW: char = '🦁';
 use crate::field::Point;
-use crate::traits::{Movable, Positionable};
+use crate::traits::{LookAround, Movable, Positionable};
 use crate::Field;
+use core::option::Option;
+use rand::prelude::SliceRandom;
+use rand::thread_rng;
 use std::fmt;
 
-///Нпарвления хода
+///Нпарвления вижения
+#[derive(Debug)]
 pub enum Direction {
     Left,
     Right,
-    Uo,
+    Up,
     Down,
 }
 
+///Абстрактная структура животное
+#[derive(Debug, Default, Clone)]
 #[allow(dead_code)]
 struct Animal {
     hunger: u8,
@@ -22,6 +28,7 @@ struct Animal {
     position: Point,
 }
 
+///Отображение животного по моджи
 impl fmt::Display for Animal {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.view)?;
@@ -29,6 +36,7 @@ impl fmt::Display for Animal {
     }
 }
 
+#[derive(Debug, Default, Clone)]
 pub struct Boar(Animal);
 
 impl Boar {
@@ -49,14 +57,39 @@ impl Positionable for Boar {
     }
 }
 
-// impl Movable for Boar {
-//     fn up(&mut self, field: &mut Field) {
-//         let (height, width) = field.size();
-//         if self.0.position.y < height {
-//             todo!();
-//         }
-//     }
-// }
+impl Movable for Boar {
+    ///Следование в случайном направлении на 1 клетку
+    ///возвращает опционально точку, в которую будет перемещено животное(если такая существует)
+    fn go_to_direction(&mut self, directions: Vec<Direction>) -> Option<Point> {
+        if directions.is_empty() {
+            return None;
+        }
+        let (cur_x, cur_y) = self.0.position.coords();
+        let mut rng = thread_rng();
+        let direction = directions.choose(&mut rng).unwrap();
+        match direction {
+            Direction::Up => Some(Point::new(cur_x, cur_y + 1)),
+            Direction::Down => Some(Point::new(cur_x, cur_y - 1)),
+            Direction::Left => Some(Point::new(cur_x - 1, cur_y)),
+            Direction::Right => Some(Point::new(cur_x + 1, cur_y)),
+        }
+    }
+
+    fn made_a_move(&mut self) {
+        self.0.shifted = true;
+    }
+
+    fn mark_as_immovable(&mut self) {
+        self.0.shifted = false;
+    }
+
+    fn is_moved(&self) -> bool {
+        self.0.shifted
+    }
+}
+
+impl LookAround for Boar {}
+impl LookAround for Lion {}
 
 impl fmt::Display for Boar {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -65,6 +98,7 @@ impl fmt::Display for Boar {
     }
 }
 
+#[derive(Debug, Default, Clone)]
 pub struct Lion(Animal);
 
 impl Lion {

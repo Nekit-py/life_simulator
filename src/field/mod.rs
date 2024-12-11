@@ -3,18 +3,16 @@ pub mod food;
 pub mod other;
 pub mod traits;
 
-use crate::traits::Positionable;
+use crate::traits::{LookAround, Positionable};
 use animals::{Boar, Lion};
 use food::{Grass, Meat};
 use other::{Virus, Wasteland};
 use rand::Rng;
 use rand::{rngs::ThreadRng, seq::SliceRandom};
 use std::fmt;
+use traits::Movable;
 
-// trait Movable {
-//     fn move_to(matrix: &mut Vec<Vec<char>>, point: Point) -> Point;
-// }
-
+#[derive(Debug, Clone)]
 pub enum Entity {
     Boar(Boar),
     Lion(Lion),
@@ -37,7 +35,7 @@ impl fmt::Display for Entity {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Default, Debug)]
 pub struct Point {
     pub x: usize,
     pub y: usize,
@@ -54,8 +52,13 @@ impl Point {
     pub fn new(x: usize, y: usize) -> Self {
         Self { x, y }
     }
+
+    pub fn coords(&self) -> (usize, usize) {
+        (self.x, self.y)
+    }
 }
 
+#[derive(Clone, Debug)]
 pub struct Field {
     height: usize, //y
     width: usize,  //x
@@ -63,6 +66,7 @@ pub struct Field {
 }
 
 impl Field {
+    ///Создание поля заполенного "пустырями"
     pub fn new(height: usize, width: usize) -> Self {
         let mut matrix = vec![];
         for y in 0..height {
@@ -80,6 +84,7 @@ impl Field {
         }
     }
 
+    ///Заполнене поля случайными объектами
     pub fn fill(&mut self, rng: &mut ThreadRng) {
         for y in 0..self.height {
             for x in 0..self.width {
@@ -95,8 +100,42 @@ impl Field {
         }
     }
     // pub fn locate(&mut self, position:)
+
+    ///Получение размеров поля
     pub fn size(&self) -> (usize, usize) {
         (self.height, self.width)
+    }
+
+    // pub fn get_by_point(&self, point: Point) -> &Entity {
+    pub fn get_by_coords(&self, x: usize, y: usize) -> &Entity {
+        // let (x, y) = point.coords();
+        &self.matrix[y][x]
+    }
+
+    pub fn start_new_life(&mut self) {
+        for row in self.matrix.iter_mut() {
+            for entity in row.iter_mut() {
+                match entity {
+                    Entity::Boar(ref mut boar) => {
+                        let available_directions = { boar.look_around((self.height, self.width)) };
+                        println!("{:?}", available_directions);
+                        let move_to = boar.go_to_direction(available_directions);
+                        if let Some(point_to_move) = move_to {
+                            println!("cur_pos = {:?}", boar.get_position());
+                            if !boar.is_moved() {
+                                let new_boar = Boar::new(point_to_move);
+                                println!("after_move = {:?}", new_boar.get_position());
+                                *entity = Entity::Boar(new_boar);
+                                println!("{:?}", entity);
+                            } else {
+                                boar.mark_as_immovable();
+                            }
+                        }
+                    }
+                    _ => (),
+                }
+            }
+        }
     }
 }
 

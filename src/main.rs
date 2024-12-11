@@ -7,11 +7,15 @@ use rand::{rngs::ThreadRng, seq::SliceRandom};
 // use std::time::{Duration, Instant};
 
 fn main() -> Result<(), std::io::Error> {
-    println!("Hellow Life Emulation");
     let mut rng = thread_rng();
     // // let mut field = Field::new(50, 70);
-    let mut field = Field::new(10, 10);
+    let mut field = Field::new(2, 3);
+    // let mut field = Field::new(1, 3);
     field.fill(&mut rng);
     println!("{}", field);
+    field.start_new_life();
+    println!("{}", field);
+    // println!("{:#?}", field);
+
     Ok(())
 }
