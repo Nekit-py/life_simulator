@@ -16,7 +16,7 @@ use traits::Movable;
 pub enum Entity {
     Boar(Boar),
     Lion(Lion),
-    Meat(Meat),
+    // Meat(Meat),
     Grass(Grass),
     Wasteland(Wasteland),
     Virus(Virus),
@@ -27,7 +27,7 @@ impl fmt::Display for Entity {
         match self {
             Entity::Boar(boar) => write!(f, "{}", boar),
             Entity::Lion(lion) => write!(f, "{}", lion),
-            Entity::Meat(meat) => write!(f, "{}", meat),
+            // Entity::Meat(meat) => write!(f, "{}", meat),
             Entity::Grass(grass) => write!(f, "{}", grass),
             Entity::Wasteland(wasteland) => write!(f, "{}", wasteland),
             Entity::Virus(virus) => write!(f, "{}", virus),
@@ -135,6 +135,21 @@ impl Field {
                                     Entity::Wasteland(Wasteland::new(Point::new(x, y)));
                             } else {
                                 boar.mark_as_immovable();
+                            }
+                        }
+                    }
+                    Entity::Lion(ref mut lion) => {
+                        let available_directions = { lion.look_around((self.height, self.width)) };
+                        let move_to = lion.move_to(available_directions);
+                        if let Some(point_to_move) = move_to {
+                            if !lion.is_moved() {
+                                let new_lion = Lion::new(point_to_move);
+                                let (to_x, to_y) = point_to_move.coords();
+                                self.matrix[to_y][to_x] = Entity::Lion(new_lion);
+                                self.matrix[y][x] =
+                                    Entity::Wasteland(Wasteland::new(Point::new(x, y)));
+                            } else {
+                                lion.mark_as_immovable();
                             }
                         }
                     }
