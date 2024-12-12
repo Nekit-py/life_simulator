@@ -154,7 +154,7 @@ impl Field {
         }
     }
 
-    pub fn to_entities(&self) -> Entities {
+    pub fn get_entities(&self) -> Entities {
         let mut collection = HashMap::new();
         for x in 0..self.width {
             for y in 0..self.height {
@@ -164,7 +164,7 @@ impl Field {
         Entities::new(collection)
     }
 
-    pub fn from_entities(&mut self, entities: &mut Entities) {
+    pub fn start_simulation(&mut self, entities: &mut Entities) {
         for x in 0..self.width {
             for y in 0..self.height {
                 //получаем текущую точку
