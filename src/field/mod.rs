@@ -5,14 +5,11 @@ pub mod traits;
 
 use crate::traits::{Action, Positionable};
 use animals::{Boar, Lion};
-use core::default;
-use core::fmt::Display;
 use food::{Grass, Meat};
 use other::{Virus, Wasteland};
 use rand::thread_rng;
 use rand::Rng;
-use rand::{rngs::ThreadRng, seq::SliceRandom};
-use std::hash::{Hash, Hasher};
+use std::hash::Hash;
 use std::{collections::HashMap, fmt};
 
 #[derive(Debug, Clone)]

@@ -1,10 +1,9 @@
 mod field;
-use core::fmt::Display;
 
 use field::*;
 
 fn main() -> Result<(), std::io::Error> {
-    let mut field = Field::new(3, 3);
+    let mut field = Field::new(30, 40);
     println!("{}", field);
 
     let mut entities = field.to_entities();

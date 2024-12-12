@@ -1,8 +1,7 @@
+use super::traits::Positionable;
 use crate::field::Point;
 use crate::traits::Action;
 use std::fmt;
-
-use super::traits::Positionable;
 
 const MEAT_VIEW: char = '🍖';
 const GRASS_VIEW: char = '🌱';

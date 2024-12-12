@@ -4,7 +4,6 @@ use core::option::Option;
 use rand::prelude::SliceRandom;
 use rand::thread_rng;
 use std::fmt;
-use std::thread::AccessError;
 
 const BOAR_VIEW: char = '🐗';
 const LION_VIEW: char = '🦁';

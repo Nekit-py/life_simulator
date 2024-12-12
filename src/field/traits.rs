@@ -1,8 +1,6 @@
-use core::option::Option;
-
-use crate::{Field, Point};
-
 use super::animals::Direction;
+use crate::Point;
+use core::option::Option;
 
 pub trait Positionable {
     fn get_position(&self) -> Point;
