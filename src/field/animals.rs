@@ -1,9 +1,10 @@
 use crate::field::Point;
-use crate::traits::{LookAround, Movable, Positionable};
+use crate::traits::{Action, LookAround, Movable, Positionable};
 use core::option::Option;
 use rand::prelude::SliceRandom;
 use rand::thread_rng;
 use std::fmt;
+use std::thread::AccessError;
 
 const BOAR_VIEW: char = '🐗';
 const LION_VIEW: char = '🦁';
@@ -39,6 +40,8 @@ impl fmt::Display for Animal {
 #[derive(Debug, Default, Clone)]
 pub struct Boar(Animal);
 
+impl LookAround for Boar {}
+
 impl Boar {
     pub fn new(position: Point) -> Self {
         Boar(Animal {
@@ -54,6 +57,10 @@ impl Boar {
 impl Positionable for Boar {
     fn get_position(&self) -> Point {
         self.0.position
+    }
+
+    fn set_position(&mut self, point: Point) {
+        self.0.position = point;
     }
 }
 
@@ -88,8 +95,18 @@ impl Movable for Boar {
     }
 }
 
-impl LookAround for Boar {}
-impl LookAround for Lion {}
+impl Action for Boar {
+    fn action(&mut self, height: usize, width: usize) {
+        if !self.is_moved() {
+            let available_directions = { self.look_around((height, width)) };
+            if let Some(point_to_move) = self.move_to(available_directions) {
+                self.set_position(point_to_move);
+            }
+        } else {
+            self.mark_as_immovable();
+        }
+    }
+}
 
 impl fmt::Display for Boar {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -100,6 +117,8 @@ impl fmt::Display for Boar {
 
 #[derive(Debug, Default, Clone)]
 pub struct Lion(Animal);
+
+impl LookAround for Lion {}
 
 impl Lion {
     pub fn new(position: Point) -> Self {
@@ -144,6 +163,23 @@ impl Movable for Lion {
 impl Positionable for Lion {
     fn get_position(&self) -> Point {
         self.0.position
+    }
+
+    fn set_position(&mut self, point: Point) {
+        self.0.position = point;
+    }
+}
+
+impl Action for Lion {
+    fn action(&mut self, height: usize, width: usize) {
+        if !self.is_moved() {
+            let available_directions = { self.look_around((height, width)) };
+            if let Some(point_to_move) = self.move_to(available_directions) {
+                self.set_position(point_to_move);
+            }
+        } else {
+            self.mark_as_immovable();
+        }
     }
 }
 

@@ -6,6 +6,12 @@ use super::animals::Direction;
 
 pub trait Positionable {
     fn get_position(&self) -> Point;
+    // fn set_position(&mut self, x: usize, y: usize);
+    fn set_position(&mut self, point: Point);
+}
+
+pub trait Action: Positionable + std::fmt::Display {
+    fn action(&mut self, height: usize, width: usize) {}
 }
 
 pub trait Movable {

@@ -1,5 +1,8 @@
 use crate::field::Point;
+use crate::traits::Action;
 use std::fmt;
+
+use super::traits::Positionable;
 
 const MEAT_VIEW: char = '🍖';
 const GRASS_VIEW: char = '🌱';
@@ -8,7 +11,7 @@ const GRASS_VIEW: char = '🌱';
 #[allow(dead_code)]
 struct Food {
     view: char,
-    postition: Point,
+    position: Point,
 }
 
 impl fmt::Display for Food {
@@ -21,11 +24,21 @@ impl fmt::Display for Food {
 #[derive(Clone, Debug)]
 pub struct Meat(Food);
 impl Meat {
-    pub fn new(postition: Point) -> Self {
+    pub fn new(position: Point) -> Self {
         Self(Food {
             view: MEAT_VIEW,
-            postition,
+            position,
         })
+    }
+}
+
+impl Positionable for Meat {
+    fn get_position(&self) -> Point {
+        self.0.position
+    }
+
+    fn set_position(&mut self, point: Point) {
+        self.0.position = point;
     }
 }
 
@@ -39,10 +52,10 @@ impl fmt::Display for Meat {
 #[derive(Clone, Debug)]
 pub struct Grass(Food);
 impl Grass {
-    pub fn new(postition: Point) -> Self {
+    pub fn new(position: Point) -> Self {
         Self(Food {
             view: GRASS_VIEW,
-            postition,
+            position,
         })
     }
 }
@@ -53,3 +66,15 @@ impl fmt::Display for Grass {
         Ok(())
     }
 }
+impl Positionable for Grass {
+    fn get_position(&self) -> Point {
+        self.0.position
+    }
+
+    fn set_position(&mut self, point: Point) {
+        self.0.position = point;
+    }
+}
+
+impl Action for Meat {}
+impl Action for Grass {}

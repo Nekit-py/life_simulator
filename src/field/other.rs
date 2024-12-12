@@ -1,5 +1,5 @@
 use crate::field::Point;
-use crate::traits::Positionable;
+use crate::traits::{Action, Positionable};
 use std::fmt;
 
 pub const VIRUS_VIEW: char = '🦠';
@@ -30,9 +30,16 @@ impl Virus {
     }
 }
 
+impl Action for Virus {}
+impl Action for Wasteland {}
+
 impl Positionable for Virus {
     fn get_position(&self) -> Point {
         self.0.position
+    }
+
+    fn set_position(&mut self, point: Point) {
+        self.0.position = point;
     }
 }
 
@@ -57,6 +64,10 @@ impl Wasteland {
 impl Positionable for Wasteland {
     fn get_position(&self) -> Point {
         self.0.position
+    }
+
+    fn set_position(&mut self, point: Point) {
+        self.0.position = point;
     }
 }
 

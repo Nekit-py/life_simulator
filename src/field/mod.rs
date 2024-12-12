@@ -3,37 +3,14 @@ pub mod food;
 pub mod other;
 pub mod traits;
 
-use crate::traits::{LookAround, Positionable};
+use crate::traits::Action;
 use animals::{Boar, Lion};
+use core::fmt::Display;
 use food::{Grass, Meat};
 use other::{Virus, Wasteland};
 use rand::Rng;
 use rand::{rngs::ThreadRng, seq::SliceRandom};
 use std::fmt;
-use traits::Movable;
-
-#[derive(Debug, Clone)]
-pub enum Entity {
-    Boar(Boar),
-    Lion(Lion),
-    // Meat(Meat),
-    Grass(Grass),
-    Wasteland(Wasteland),
-    Virus(Virus),
-}
-
-impl fmt::Display for Entity {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Entity::Boar(boar) => write!(f, "{}", boar),
-            Entity::Lion(lion) => write!(f, "{}", lion),
-            // Entity::Meat(meat) => write!(f, "{}", meat),
-            Entity::Grass(grass) => write!(f, "{}", grass),
-            Entity::Wasteland(wasteland) => write!(f, "{}", wasteland),
-            Entity::Virus(virus) => write!(f, "{}", virus),
-        }
-    }
-}
 
 #[derive(Clone, Copy, Default, Debug)]
 pub struct Point {
@@ -58,11 +35,10 @@ impl Point {
     }
 }
 
-#[derive(Clone, Debug)]
 pub struct Field {
     height: usize, //y
     width: usize,  //x
-    matrix: Vec<Vec<Entity>>,
+    matrix: Vec<Vec<Box<dyn Action>>>,
 }
 
 impl Field {
@@ -73,7 +49,7 @@ impl Field {
             let mut row = vec![];
             for x in 0..width {
                 let p = Point::new(x, y);
-                row.push(Entity::Wasteland(Wasteland::new(p)));
+                row.push(Box::new(Wasteland::new(p)) as Box<dyn Action>);
             }
             matrix.push(row);
         }
@@ -83,79 +59,38 @@ impl Field {
             matrix,
         }
     }
-
-    ///Заполнене поля случайными объектами
     pub fn fill(&mut self, rng: &mut ThreadRng) {
-        for y in 0..self.height {
-            for x in 0..self.width {
+        for x in 0..self.width {
+            for y in 0..self.height {
                 let point = Point::new(x, y);
                 match rng.gen_range(1..=100) {
-                    1..=3 => self.matrix[y][x] = Entity::Virus(Virus::new(point)),
-                    11..=13 => self.matrix[y][x] = Entity::Lion(Lion::new(point)),
-                    31..=40 => self.matrix[y][x] = Entity::Boar(Boar::new(point)),
-                    71..=100 => self.matrix[y][x] = Entity::Grass(Grass::new(point)),
-                    _ => self.matrix[y][x] = Entity::Wasteland(Wasteland::new(point)),
+                    1..=3 => self.matrix[x][y] = Box::new(Virus::new(point)),
+                    11..=13 => self.matrix[x][y] = Box::new(Lion::new(point)),
+                    31..=40 => self.matrix[x][y] = Box::new(Boar::new(point)),
+                    71..=100 => self.matrix[x][y] = Box::new(Grass::new(point)),
+                    _ => self.matrix[x][y] = Box::new(Wasteland::new(point)),
                 }
             }
         }
     }
 
-    ///Получение размеров поля
-    // pub fn size(&self) -> (usize, usize) {
-    //     (self.height, self.width)
-    // }
+    // ///Назначить на точку сущность
+    // pub fn assign_to_point(&mut self, entity: Box<&mut dyn Action>) {
+    pub fn assign_to_point(&mut self, entity: &mut Box<(dyn Action + 'static)>) {
+        let (cur_x, cur_y) = entity.get_position().coords();
+        self.matrix[cur_x][cur_y] = Box::new(Wasteland::new(Point::new(cur_x, cur_y)));
+        entity.action(self.height, self.width);
+        let (to_x, to_y) = entity.get_position().coords();
+        println!("{}", entity);
+        // self.matrix[to_x][to_y] = Box::new(Box::into_inner(entity));
+    }
 
-    // ///Назначить на точку
-    // pub fn assign_to_point<T: Positionable>(&mut self, entity: T) {
-    //     let destination_point = entity.get_position();
-    //     let (to_x, to_y) = destination_point.coords();
-    //     todo!();
-    //     // self.matrix[to_y][to_x] = Entity
-    // }
-    //
-    // // pub fn get_by_point(&self, point: Point) -> &Entity {
-    // pub fn get_by_coords(&self, x: usize, y: usize) -> &Entity {
-    //     // let (x, y) = point.coords();
-    //     &self.matrix[y][x]
-    // }
-
-    //Антипаттерн полиморфизму? + Рассмотреть мапу
+    // //Антипаттерн полиморфизму? + Рассмотреть мапу
     pub fn start_new_life(&mut self) {
-        for y in 0..self.height {
-            for x in 0..self.width {
-                match self.matrix[y][x] {
-                    Entity::Boar(ref mut boar) => {
-                        let available_directions = { boar.look_around((self.height, self.width)) };
-                        let move_to = boar.move_to(available_directions);
-                        if let Some(point_to_move) = move_to {
-                            if !boar.is_moved() {
-                                let new_boar = Boar::new(point_to_move);
-                                let (to_x, to_y) = point_to_move.coords();
-                                self.matrix[to_y][to_x] = Entity::Boar(new_boar);
-                                self.matrix[y][x] =
-                                    Entity::Wasteland(Wasteland::new(Point::new(x, y)));
-                            } else {
-                                boar.mark_as_immovable();
-                            }
-                        }
-                    }
-                    Entity::Lion(ref mut lion) => {
-                        let available_directions = { lion.look_around((self.height, self.width)) };
-                        let move_to = lion.move_to(available_directions);
-                        if let Some(point_to_move) = move_to {
-                            if !lion.is_moved() {
-                                let new_lion = Lion::new(point_to_move);
-                                let (to_x, to_y) = point_to_move.coords();
-                                self.matrix[to_y][to_x] = Entity::Lion(new_lion);
-                                self.matrix[y][x] =
-                                    Entity::Wasteland(Wasteland::new(Point::new(x, y)));
-                            } else {
-                                lion.mark_as_immovable();
-                            }
-                        }
-                    }
-                    _ => (),
-                }
+        for row in self.matrix.iter_mut() {
+            for entity in row.iter_mut() {
+                // println! {"{}", entity}
+                self.assign_to_point(entity);
             }
         }
     }
@@ -164,7 +99,10 @@ impl Field {
 impl fmt::Display for Field {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for row in &self.matrix {
-            let row_display: Vec<String> = row.iter().map(|entity| format!("{}", entity)).collect();
+            let row_display: Vec<String> = row
+                .iter()
+                .map(|entity| format!("{}", entity))
+                .collect::<Vec<_>>();
             writeln!(f, "{}", row_display.join(""))?;
         }
         Ok(())
