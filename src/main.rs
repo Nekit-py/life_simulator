@@ -4,17 +4,12 @@ use core::fmt::Display;
 use field::*;
 
 fn main() -> Result<(), std::io::Error> {
-    let mut field = Field::new(10, 10);
-
+    let mut field = Field::new(3, 3);
     println!("{}", field);
-    // field.fill(&mut rng);
-    // println!("{}", field);
 
-    // field.start_new_life();
-    // println!("{}", field);
-
-    // field.start_new_life();
-    // println!("{}", field);
+    let mut entities = field.to_entities();
+    field.from_entities(&mut entities);
+    println!("{}", field);
 
     Ok(())
 }

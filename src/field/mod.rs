@@ -12,7 +12,8 @@ use other::{Virus, Wasteland};
 use rand::thread_rng;
 use rand::Rng;
 use rand::{rngs::ThreadRng, seq::SliceRandom};
-use std::fmt;
+use std::hash::{Hash, Hasher};
+use std::{collections::HashMap, fmt};
 
 #[derive(Debug, Clone)]
 pub enum Entity {
@@ -79,7 +80,7 @@ impl Default for Entity {
     }
 }
 
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default, Hash, Eq, PartialEq)]
 pub struct Point {
     pub x: usize,
     pub y: usize,
@@ -102,6 +103,26 @@ impl Point {
     }
 }
 
+pub struct Entities {
+    collection: HashMap<Point, Entity>,
+}
+
+impl Entities {
+    fn new(collection: HashMap<Point, Entity>) -> Self {
+        Self { collection }
+    }
+
+    fn pop(&mut self, point: &Point) -> Entity {
+        self.collection.remove(point).unwrap()
+    }
+
+    fn add(&mut self, entity: Entity) {
+        let point_key = entity.get_position();
+        self.collection.insert(point_key, entity);
+    }
+}
+
+//Есть точка достаем по ней объект, мутируем его, пишем по точке, обновляем мапу
 pub struct Field {
     height: usize, //y
     width: usize,  //x
@@ -136,23 +157,43 @@ impl Field {
         }
     }
 
-    ///Назначить на точку сущность
-    pub fn assign_to_point(&mut self, entity: &mut Entity) {
-        let (cur_x, cur_y) = entity.get_position().coords();
-        self.matrix[cur_x][cur_y] = Entity::Wasteland(Wasteland::new(Point::new(cur_x, cur_y)));
-        entity.action(self.height, self.width);
-        let (to_x, to_y) = entity.get_position().coords();
-        self.matrix[to_x][to_y] = std::mem::take(entity);
+    pub fn to_entities(&self) -> Entities {
+        let mut collection = HashMap::new();
+        for x in 0..self.width {
+            for y in 0..self.height {
+                collection.insert(Point::new(x, y), self.matrix[x][y].clone());
+            }
+        }
+        Entities::new(collection)
     }
 
-    ///Антипаттерн полиморфизму? + Рассмотреть мапу
-    pub fn start_new_life(&mut self) {
-        for row in self.matrix.iter_mut() {
-            for entity in row.iter_mut() {
-                self.assign_to_point(entity);
+    pub fn from_entities(&mut self, entities: &mut Entities) {
+        for x in 0..self.width {
+            for y in 0..self.height {
+                //получаем текущую точку
+                let point = Point::new(x, y);
+                //Получаем сущность по координатам (точке)
+                let mut entity = entities.pop(&point);
+                //Мутируем сущность
+                entity.action(self.height, self.width);
+                //Создаем пустое поле на месте текущей точки
+                let wasteland = Entity::Wasteland(Wasteland::new(point));
+                self.matrix[x][y] = wasteland.clone();
+                //Получаем координаты куда будет установлена обновленная сущность и ставим ее туда
+                let (to_x, to_y) = entity.get_position().coords();
+                self.matrix[to_x][to_y] = entity.clone();
+                //Обновляем мапу заместив удаленную сущность на пустую землю
+                entities.add(wasteland);
+                //Обновляем мапу добавив по координатам обновленную сущность
+                entities.add(entity);
             }
         }
     }
+
+    // /Антипаттерн полиморфизму? + Рассмотреть мапу
+    // pub fn start_new_life(&mut self) {
+    //     todo!();
+    // }
 }
 
 impl fmt::Display for Field {
