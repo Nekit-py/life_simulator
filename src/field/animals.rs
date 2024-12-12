@@ -98,7 +98,7 @@ impl Movable for Boar {
 impl Action for Boar {
     fn action(&mut self, height: usize, width: usize) {
         if !self.is_moved() {
-            let available_directions = { self.look_around((height, width)) };
+            let available_directions = self.look_around((height, width));
             if let Some(point_to_move) = self.move_to(available_directions) {
                 self.set_position(point_to_move);
             }

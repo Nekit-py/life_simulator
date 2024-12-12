@@ -10,7 +10,7 @@ pub trait Positionable {
     fn set_position(&mut self, point: Point);
 }
 
-pub trait Action: Positionable + std::fmt::Display {
+pub trait Action: Positionable + std::fmt::Display + Sized {
     fn action(&mut self, height: usize, width: usize) {}
 }
 

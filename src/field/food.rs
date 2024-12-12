@@ -7,7 +7,7 @@ use super::traits::Positionable;
 const MEAT_VIEW: char = '🍖';
 const GRASS_VIEW: char = '🌱';
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 #[allow(dead_code)]
 struct Food {
     view: char,
@@ -21,7 +21,7 @@ impl fmt::Display for Food {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Meat(Food);
 impl Meat {
     pub fn new(position: Point) -> Self {
@@ -49,7 +49,7 @@ impl fmt::Display for Meat {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Grass(Food);
 impl Grass {
     pub fn new(position: Point) -> Self {

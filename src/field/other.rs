@@ -6,7 +6,7 @@ pub const VIRUS_VIEW: char = '🦠';
 pub const WASTELAND_VIEW: char = '⬛';
 
 #[allow(dead_code)]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 struct Object {
     view: char,
     position: Point,
@@ -19,7 +19,7 @@ impl fmt::Display for Object {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Virus(Object);
 impl Virus {
     pub fn new(position: Point) -> Self {
@@ -50,7 +50,7 @@ impl fmt::Display for Virus {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Wasteland(Object);
 impl Wasteland {
     pub fn new(position: Point) -> Self {

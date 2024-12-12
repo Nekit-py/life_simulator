@@ -2,16 +2,16 @@ mod field;
 use core::fmt::Display;
 
 use field::*;
-use rand::thread_rng;
 
 fn main() -> Result<(), std::io::Error> {
-    let mut rng = thread_rng();
-    let mut field = Field::new(4, 4);
-    field.fill(&mut rng);
-    println!("{}", field);
+    let mut field = Field::new(10, 10);
 
-    field.start_new_life();
     println!("{}", field);
+    // field.fill(&mut rng);
+    // println!("{}", field);
+
+    // field.start_new_life();
+    // println!("{}", field);
 
     // field.start_new_life();
     // println!("{}", field);
