@@ -14,7 +14,7 @@ pub trait Action: Positionable + std::fmt::Display + Sized {
 
 pub trait Movable {
     fn move_to(&mut self, directions: Vec<Direction>) -> Option<Point>;
-    fn made_a_move(&mut self);
+    fn mark_as_movable(&mut self);
     fn mark_as_immovable(&mut self);
     fn is_moved(&self) -> bool;
 }

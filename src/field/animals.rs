@@ -81,14 +81,16 @@ impl Movable for Boar {
         }
     }
 
-    fn made_a_move(&mut self) {
+    fn mark_as_movable(&mut self) {
         self.0.shifted = true;
     }
 
+    //Поставить флаг, что сущность не двигалась
     fn mark_as_immovable(&mut self) {
         self.0.shifted = false;
     }
 
+    //Проверяет совершалось ли движения
     fn is_moved(&self) -> bool {
         self.0.shifted
     }
@@ -98,8 +100,16 @@ impl Action for Boar {
     fn action(&mut self, height: usize, width: usize) {
         if !self.is_moved() {
             let available_directions = self.look_around((height, width));
+            println!(
+                "Доступные ходы {} -> {:?}",
+                self.0.view, available_directions
+            );
+
             if let Some(point_to_move) = self.move_to(available_directions) {
+                println!("Текущая позиция: {:?}", self.get_position());
                 self.set_position(point_to_move);
+                println!("Новая позиция: {:?}", self.get_position());
+                self.mark_as_movable();
             }
         } else {
             self.mark_as_immovable();
@@ -146,7 +156,7 @@ impl Movable for Lion {
         }
     }
 
-    fn made_a_move(&mut self) {
+    fn mark_as_movable(&mut self) {
         self.0.shifted = true;
     }
 
@@ -175,6 +185,7 @@ impl Action for Lion {
             let available_directions = { self.look_around((height, width)) };
             if let Some(point_to_move) = self.move_to(available_directions) {
                 self.set_position(point_to_move);
+                self.mark_as_movable();
             }
         } else {
             self.mark_as_immovable();
