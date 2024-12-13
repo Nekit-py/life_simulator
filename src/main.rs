@@ -94,6 +94,8 @@ fn run_test_simulation() -> Result<(), std::io::Error> {
     Ok(())
 }
 
+///1) Добавить трекер
+/// 2) Поставить ключем не только точку, а объкт, чтобы идентифицировать, что там стоит
 fn main() -> Result<(), std::io::Error> {
     // run()?;
     run_test_simulation()?;
