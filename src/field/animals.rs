@@ -73,9 +73,10 @@ impl Movable for Boar {
         let (cur_x, cur_y) = self.0.position.coords();
         let mut rng = thread_rng();
         let direction = directions.choose(&mut rng).unwrap();
+        println!("Выбрано направление -> {:?}", direction);
         match direction {
-            Direction::Up => Some(Point::new(cur_x, cur_y + 1)),
-            Direction::Down => Some(Point::new(cur_x, cur_y - 1)),
+            Direction::Up => Some(Point::new(cur_x, cur_y - 1)),
+            Direction::Down => Some(Point::new(cur_x, cur_y + 1)),
             Direction::Left => Some(Point::new(cur_x - 1, cur_y)),
             Direction::Right => Some(Point::new(cur_x + 1, cur_y)),
         }
@@ -98,7 +99,11 @@ impl Movable for Boar {
 
 impl Action for Boar {
     fn action(&mut self, height: usize, width: usize) {
-        if !self.is_moved() {
+        println!();
+        println!("Текущая позиция: {:?}", self.get_position());
+        if self.is_moved() {
+            self.mark_as_immovable();
+        } else {
             let available_directions = self.look_around((height, width));
             println!(
                 "Доступные ходы {} -> {:?}",
@@ -106,13 +111,10 @@ impl Action for Boar {
             );
 
             if let Some(point_to_move) = self.move_to(available_directions) {
-                println!("Текущая позиция: {:?}", self.get_position());
                 self.set_position(point_to_move);
-                println!("Новая позиция: {:?}", self.get_position());
+                // println!("Новая позиция: {:?}", self.get_position());
                 self.mark_as_movable();
             }
-        } else {
-            self.mark_as_immovable();
         }
     }
 }

@@ -4,7 +4,6 @@ use core::option::Option;
 
 pub trait Positionable {
     fn get_position(&self) -> Point;
-    // fn set_position(&mut self, x: usize, y: usize);
     fn set_position(&mut self, point: Point);
 }
 
@@ -21,7 +20,6 @@ pub trait Movable {
 
 //Проверка возможных направлений движения
 pub trait LookAround: Positionable {
-    // fn look_around(&self, size: (usize, usize)) -> Vec<Direction>;
     fn look_around(&self, size: (usize, usize)) -> Vec<Direction> {
         //Возможные направления
         let mut directions: Vec<Direction> = vec![];
@@ -33,14 +31,20 @@ pub trait LookAround: Positionable {
         let (cur_x, cur_y) = cur_pos.coords();
 
         if cur_y > 0 {
-            directions.push(Direction::Down)
-        } else if cur_y < height {
-            directions.push(Direction::Up)
+            directions.push(Direction::Up);
         }
+        if cur_y < height - 1 {
+            // Индексация начинается с 0
+            directions.push(Direction::Down);
+        }
+
+        // Проверка по оси X (ширина)
         if cur_x > 0 {
-            directions.push(Direction::Left)
-        } else if cur_x < width {
-            directions.push(Direction::Right)
+            directions.push(Direction::Left);
+        }
+        if cur_x < width - 1 {
+            // Индексация начинается с 0
+            directions.push(Direction::Right);
         }
         directions
     }

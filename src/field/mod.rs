@@ -11,6 +11,7 @@ use rand::thread_rng;
 use rand::Rng;
 use std::hash::Hash;
 use std::{collections::HashMap, fmt};
+use traits::Movable;
 
 #[derive(Debug, Clone)]
 pub enum Entity {
@@ -21,6 +22,16 @@ pub enum Entity {
     Wasteland(Wasteland),
     Virus(Virus),
 }
+
+// impl Entity {
+//     fn is_moved(&self) -> bool {
+//         match self {
+//             Entity::Boar(boar) => boar.is_moved(),
+//             Entity::Lion(lion) => lion.is_moved(),
+//             _ => false,
+//         }
+//     }
+// }
 
 impl Action for Entity {
     fn action(&mut self, height: usize, width: usize) {
@@ -120,6 +131,7 @@ impl Entities {
 }
 
 //Есть точка достаем по ней объект, мутируем его, пишем по точке, обновляем мапу
+#[derive(Debug)]
 pub struct Field {
     height: usize, //y
     width: usize,  //x
@@ -127,14 +139,24 @@ pub struct Field {
 }
 
 impl Field {
-    ///Создание поля заполенного "пустырями"
+    pub fn from_test_case(matrix: Vec<Vec<Entity>>) -> Self {
+        let (height, width) = (3usize, 3usize);
+        Self {
+            height,
+            width,
+            matrix,
+        }
+    }
+
+    ///Создание поля заполненными случайными сущностями
     pub fn new(height: usize, width: usize) -> Self {
         let mut rng = thread_rng();
         let mut matrix: Vec<Vec<Entity>> = vec![];
 
-        for x in 0..width {
+        //TODO: Перемсотреть записб по координатам
+        for y in 0..height {
             let mut row = vec![];
-            for y in 0..height {
+            for x in 0..width {
                 let point = Point::new(x, y);
                 match rng.gen_range(1..=100) {
                     1..=3 => row.push(Entity::Virus(Virus::new(point))),
@@ -156,17 +178,18 @@ impl Field {
 
     pub fn get_entities(&self) -> Entities {
         let mut collection = HashMap::new();
-        for x in 0..self.width {
-            for y in 0..self.height {
-                collection.insert(Point::new(x, y), self.matrix[x][y].clone());
+        for y in 0..self.height {
+            for x in 0..self.width {
+                collection.insert(Point::new(x, y), self.matrix[y][x].clone());
             }
         }
         Entities::new(collection)
     }
 
+    //TODO проверить, как заменяется на пустую клетку, правильно ли меняются флаги хода, как удаляются и добовляются сущности в мапу
     pub fn simulate(&mut self, entities: &mut Entities) {
-        for x in 0..self.width {
-            for y in 0..self.height {
+        for y in 0..self.height {
+            for x in 0..self.width {
                 //получаем текущую точку
                 let point = Point::new(x, y);
                 //Получаем сущность по координатам (точке)
@@ -175,10 +198,10 @@ impl Field {
                 entity.action(self.height, self.width);
                 //Создаем пустое поле на месте текущей точки
                 let wasteland = Entity::Wasteland(Wasteland::new(point));
-                self.matrix[x][y] = wasteland.clone();
+                self.matrix[y][x] = wasteland.clone();
                 //Получаем координаты куда будет установлена обновленная сущность и ставим ее туда
                 let (to_x, to_y) = entity.get_position().coords();
-                self.matrix[to_x][to_y] = entity.clone();
+                self.matrix[to_y][to_x] = entity.clone();
                 //Обновляем мапу заместив удаленную сущность на пустую землю
                 entities.add(wasteland);
                 //Обновляем мапу добавив по координатам обновленную сущность
@@ -186,11 +209,6 @@ impl Field {
             }
         }
     }
-
-    // /Антипаттерн полиморфизму? + Рассмотреть мапу
-    // pub fn start_new_life(&mut self) {
-    //     todo!();
-    // }
 }
 
 impl fmt::Display for Field {
