@@ -164,7 +164,7 @@ impl Field {
         Entities::new(collection)
     }
 
-    pub fn start_simulation(&mut self, entities: &mut Entities) {
+    pub fn simulate(&mut self, entities: &mut Entities) {
         for x in 0..self.width {
             for y in 0..self.height {
                 //получаем текущую точку
