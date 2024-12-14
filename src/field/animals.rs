@@ -3,19 +3,20 @@ use crate::traits::{Action, LookAround, Movable, Positionable};
 use core::option::Option;
 use rand::prelude::SliceRandom;
 use rand::thread_rng;
+use std::collections::HashSet;
 use std::fmt;
 
 const BOAR_VIEW: char = '🐗';
 const LION_VIEW: char = '🦁';
 
 ///Нпарвления вижения
-#[derive(Debug)]
-pub enum Direction {
-    Left,
-    Right,
-    Up,
-    Down,
-}
+// #[derive(Debug)]
+// pub enum Direction {
+//     Left,
+//     Right,
+//     Up,
+//     Down,
+// }
 
 ///Абстрактная структура животное
 #[derive(Debug, Default, Clone)]
@@ -24,7 +25,8 @@ struct Animal {
     hunger: u8,
     health: u8,
     view: char,
-    shifted: bool,
+    // shifted: bool,
+    track: HashSet<Point>,
     position: Point,
 }
 
@@ -43,9 +45,12 @@ impl LookAround for Boar {}
 
 impl Boar {
     pub fn new(position: Point) -> Self {
+        let mut track = HashSet::with_capacity(3);
+        track.insert(position);
+
         Boar(Animal {
             view: BOAR_VIEW,
-            shifted: false,
+            track,
             position,
             health: 10,
             hunger: 5,
@@ -86,19 +91,19 @@ impl Movable for Boar {
         }
     }
 
-    fn mark_as_movable(&mut self) {
-        self.0.shifted = true;
-    }
-
-    //Поставить флаг, что сущность не двигалась
-    fn mark_as_immovable(&mut self) {
-        self.0.shifted = false;
-    }
-
-    //Проверяет совершалось ли движения
-    fn is_moved(&self) -> bool {
-        self.0.shifted
-    }
+    // fn mark_as_movable(&mut self) {
+    //     self.0.shifted = true;
+    // }
+    //
+    // //Поставить флаг, что сущность не двигалась
+    // fn mark_as_immovable(&mut self) {
+    //     self.0.shifted = false;
+    // }
+    //
+    // //Проверяет совершалось ли движения
+    // fn is_moved(&self) -> bool {
+    //     self.0.shifted
+    // }
 }
 
 impl Action for Boar {
@@ -137,9 +142,11 @@ impl LookAround for Lion {}
 
 impl Lion {
     pub fn new(position: Point) -> Self {
+        let mut track = HashSet::with_capacity(3);
+        track.insert(position);
         Lion(Animal {
             view: LION_VIEW,
-            shifted: false,
+            track,
             position,
             health: 15,
             hunger: 7,
@@ -147,7 +154,7 @@ impl Lion {
     }
 }
 impl Movable for Lion {
-    fn move_to(&mut self, directions: Vec<Direction>) -> Option<Point> {
+    fn move_to(&mut self, directions: Vec<Point>) -> Option<Point> {
         if directions.is_empty() {
             return None;
         }
@@ -162,17 +169,17 @@ impl Movable for Lion {
         }
     }
 
-    fn mark_as_movable(&mut self) {
-        self.0.shifted = true;
-    }
-
-    fn mark_as_immovable(&mut self) {
-        self.0.shifted = false;
-    }
-
-    fn is_moved(&self) -> bool {
-        self.0.shifted
-    }
+    // fn mark_as_movable(&mut self) {
+    //     self.0.shifted = true;
+    // }
+    //
+    // fn mark_as_immovable(&mut self) {
+    //     self.0.shifted = false;
+    // }
+    //
+    // fn is_moved(&self) -> bool {
+    //     self.0.shifted
+    // }
 }
 
 impl Positionable for Lion {

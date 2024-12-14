@@ -1,4 +1,4 @@
-use super::animals::Direction;
+// use super::animals::Direction;
 use crate::Point;
 use core::option::Option;
 
@@ -7,12 +7,12 @@ pub trait Positionable {
     fn set_position(&mut self, point: Point);
 }
 
-pub trait Action: Positionable + std::fmt::Display + Sized {
+pub trait Action: Positionable + std::fmt::Display {
     fn action(&mut self, height: usize, width: usize) {}
 }
 
 pub trait Movable {
-    fn move_to(&mut self, directions: Vec<Direction>) -> Option<Point>;
+    fn move_to(&mut self, directions: Vec<Point>) -> Option<Point>;
     fn mark_as_movable(&mut self);
     fn mark_as_immovable(&mut self);
     fn is_moved(&self) -> bool;
@@ -20,9 +20,9 @@ pub trait Movable {
 
 //Проверка возможных направлений движения
 pub trait LookAround: Positionable {
-    fn look_around(&self, size: (usize, usize)) -> Vec<Direction> {
+    fn look_around(&self, size: (usize, usize)) -> Vec<Point> {
         //Возможные направления
-        let mut directions: Vec<Direction> = vec![];
+        let mut directions: Vec<Point> = vec![];
         //Размеры поля
         let (height, width) = size;
         //Текущая точка кабана
@@ -31,20 +31,20 @@ pub trait LookAround: Positionable {
         let (cur_x, cur_y) = cur_pos.coords();
 
         if cur_y > 0 {
-            directions.push(Direction::Up);
+            directions.push(Point::new(cur_x, cur_y + 1));
         }
         if cur_y < height - 1 {
             // Индексация начинается с 0
-            directions.push(Direction::Down);
+            directions.push(Point::new(cur_x, cur_y - 1));
         }
 
         // Проверка по оси X (ширина)
         if cur_x > 0 {
-            directions.push(Direction::Left);
+            directions.push(Point::new(cur_x - 1, cur_y));
         }
         if cur_x < width - 1 {
             // Индексация начинается с 0
-            directions.push(Direction::Right);
+            directions.push(Point::new(cur_x + 1, cur_y));
         }
         directions
     }
