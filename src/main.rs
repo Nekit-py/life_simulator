@@ -2,17 +2,17 @@ mod field;
 
 use field::*;
 
-use animals::Boar;
+use crate::entities::Entity;
 use crossterm::{
     event::KeyCode,
     terminal::{self, ClearType},
     ExecutableCommand,
 };
-use food::Grass;
-use other::Wasteland;
+use entities::animals::Boar;
+use entities::food::Grass;
+use entities::other::Wasteland;
 use std::io::Write;
 use std::{thread, time};
-
 fn test_case1() -> Vec<Vec<Entity>> {
     vec![
         vec![

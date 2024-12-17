@@ -1,18 +1,19 @@
 use crate::field::Point;
-use crate::traits::{Action, Positionable};
+use crate::traits::Action;
+use crate::traits::Positionable;
 use std::fmt;
 
-pub const VIRUS_VIEW: char = '🦠';
-pub const WASTELAND_VIEW: char = '⬛';
+pub const MEAT_VIEW: char = '🍖';
+pub const GRASS_VIEW: char = '🌱';
 
-#[allow(dead_code)]
 #[derive(Clone, Debug, Default)]
-struct Object {
+#[allow(dead_code)]
+struct Food {
     view: char,
     position: Point,
 }
 
-impl fmt::Display for Object {
+impl fmt::Display for Food {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.view)?;
         Ok(())
@@ -20,20 +21,21 @@ impl fmt::Display for Object {
 }
 
 #[derive(Clone, Debug, Default)]
-pub struct Virus(Object);
-impl Virus {
+pub struct Meat(Food);
+impl Meat {
     pub fn new(position: Point) -> Self {
-        Self(Object {
-            view: VIRUS_VIEW,
+        Self(Food {
+            view: MEAT_VIEW,
             position,
         })
     }
+
+    pub fn view(&self) -> char {
+        self.0.view
+    }
 }
 
-impl Action for Virus {}
-impl Action for Wasteland {}
-
-impl Positionable for Virus {
+impl Positionable for Meat {
     fn get_position(&self) -> Point {
         self.0.position
     }
@@ -43,7 +45,7 @@ impl Positionable for Virus {
     }
 }
 
-impl fmt::Display for Virus {
+impl fmt::Display for Meat {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.0)?;
         Ok(())
@@ -51,17 +53,27 @@ impl fmt::Display for Virus {
 }
 
 #[derive(Clone, Debug, Default)]
-pub struct Wasteland(Object);
-impl Wasteland {
+pub struct Grass(Food);
+impl Grass {
     pub fn new(position: Point) -> Self {
-        Self(Object {
-            view: WASTELAND_VIEW,
+        Self(Food {
+            view: GRASS_VIEW,
             position,
         })
     }
+
+    pub fn view(&self) -> char {
+        self.0.view
+    }
 }
 
-impl Positionable for Wasteland {
+impl fmt::Display for Grass {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)?;
+        Ok(())
+    }
+}
+impl Positionable for Grass {
     fn get_position(&self) -> Point {
         self.0.position
     }
@@ -71,9 +83,5 @@ impl Positionable for Wasteland {
     }
 }
 
-impl fmt::Display for Wasteland {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.0)?;
-        Ok(())
-    }
-}
+impl Action for Meat {}
+impl Action for Grass {}

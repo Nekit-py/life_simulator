@@ -1,92 +1,16 @@
-pub mod animals;
-pub mod food;
-pub mod other;
+pub mod entities;
 pub mod traits;
 
+use crate::entities::{Entities, Entity};
 use crate::traits::{Action, Positionable};
-use animals::{Boar, Lion};
-use food::{Grass, Meat};
-use other::{Virus, Wasteland};
+use entities::animals::{Boar, Lion};
+use entities::food::{Grass, Meat};
+use entities::other::{Virus, Wasteland};
 use rand::thread_rng;
 use rand::Rng;
 use std::hash::Hash;
 use std::{collections::HashMap, fmt};
 use traits::Movable;
-
-#[derive(Debug, Clone)]
-pub enum Entity {
-    Boar(Boar),
-    Lion(Lion),
-    Meat(Meat),
-    Grass(Grass),
-    Wasteland(Wasteland),
-    Virus(Virus),
-}
-
-// impl Entity {
-//     fn is_moved(&self) -> bool {
-//         match self {
-//             Entity::Boar(boar) => boar.is_moved(),
-//             Entity::Lion(lion) => lion.is_moved(),
-//             _ => false,
-//         }
-//     }
-// }
-
-impl Action for Entity {
-    fn action(&mut self, height: usize, width: usize) {
-        match self {
-            Entity::Boar(boar) => boar.action(height, width),
-            Entity::Lion(lion) => lion.action(height, width),
-            Entity::Meat(meat) => meat.action(height, width),
-            Entity::Grass(grass) => grass.action(height, width),
-            Entity::Wasteland(wasteland) => wasteland.action(height, width),
-            Entity::Virus(virus) => virus.action(height, width),
-        }
-    }
-}
-
-impl Positionable for Entity {
-    fn get_position(&self) -> Point {
-        match self {
-            Entity::Boar(boar) => boar.get_position(),
-            Entity::Lion(lion) => lion.get_position(),
-            Entity::Meat(meat) => meat.get_position(),
-            Entity::Grass(grass) => grass.get_position(),
-            Entity::Wasteland(wasteland) => wasteland.get_position(),
-            Entity::Virus(virus) => virus.get_position(),
-        }
-    }
-    fn set_position(&mut self, point: Point) {
-        match self {
-            Entity::Boar(boar) => boar.set_position(point),
-            Entity::Lion(lion) => lion.set_position(point),
-            Entity::Meat(meat) => meat.set_position(point),
-            Entity::Grass(grass) => grass.set_position(point),
-            Entity::Wasteland(wasteland) => wasteland.set_position(point),
-            Entity::Virus(virus) => virus.set_position(point),
-        }
-    }
-}
-
-impl fmt::Display for Entity {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Entity::Boar(boar) => write!(f, "{}", boar),
-            Entity::Lion(lion) => write!(f, "{}", lion),
-            Entity::Meat(meat) => write!(f, "{}", meat),
-            Entity::Grass(grass) => write!(f, "{}", grass),
-            Entity::Wasteland(wasteland) => write!(f, "{}", wasteland),
-            Entity::Virus(virus) => write!(f, "{}", virus),
-        }
-    }
-}
-
-impl Default for Entity {
-    fn default() -> Entity {
-        Entity::Wasteland(Wasteland::new(Point::default()))
-    }
-}
 
 #[derive(Clone, Copy, Debug, Default, Hash, Eq, PartialEq)]
 pub struct Point {
@@ -108,25 +32,6 @@ impl Point {
 
     pub fn coords(&self) -> (usize, usize) {
         (self.x, self.y)
-    }
-}
-
-pub struct Entities {
-    collection: HashMap<Point, Entity>,
-}
-
-impl Entities {
-    fn new(collection: HashMap<Point, Entity>) -> Self {
-        Self { collection }
-    }
-
-    fn pop(&mut self, point: &Point) -> Entity {
-        self.collection.remove(point).unwrap()
-    }
-
-    fn add(&mut self, entity: Entity) {
-        let point_key = entity.get_position();
-        self.collection.insert(point_key, entity);
     }
 }
 
@@ -195,7 +100,7 @@ impl Field {
                 //Получаем сущность по координатам (точке)
                 let mut entity = entities.pop(&point);
                 //Мутируем сущность
-                entity.action(self.height, self.width);
+                entity.action(self.height, self.width, entities);
                 //Создаем пустое поле на месте текущей точки
                 let wasteland = Entity::Wasteland(Wasteland::new(point));
                 self.matrix[y][x] = wasteland.clone();
