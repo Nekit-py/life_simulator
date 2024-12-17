@@ -67,7 +67,7 @@ pub trait Health {
 }
 
 pub trait Movable: LookAround {
-    fn get_track(&mut self) -> &mut HashSet<Point>;
+    fn get_track(&mut self) -> Option<&mut HashSet<Point>>;
 
     ///Следование в выбранном направлении на 1 клетку
     ///Должен проверять, что есть в области видимостьи:
@@ -80,7 +80,7 @@ pub trait Movable: LookAround {
 
         // Получаем изменяемую ссылку на трек и обновляем её
         {
-            let track = self.get_track();
+            let track = self.get_track().unwrap();
             if track.len() == 3 {
                 track.clear();
                 track.insert(position);
@@ -92,7 +92,7 @@ pub trait Movable: LookAround {
             self.set_position(point_to_move); // Обновляем позицию
 
             // Добавляем новую позицию в трек
-            let track = self.get_track(); // Создаём новую изменяемую ссылку на трек
+            let track = self.get_track().unwrap(); // Создаём новую изменяемую ссылку на трек
             track.insert(point_to_move);
         }
     }
@@ -112,7 +112,9 @@ pub trait LookAround: Positionable {
         if cur_y > 0 {
             availabele_points.push(Point::new(cur_x, cur_y + 1));
         }
-        if cur_y < height - 1 {
+
+        // if cur_y < height - 1 {
+        if cur_y < height - 1 && cur_y > 0 {
             // Индексация начинается с 0
             availabele_points.push(Point::new(cur_x, cur_y - 1));
         }

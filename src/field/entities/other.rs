@@ -1,5 +1,5 @@
 use crate::field::Point;
-use crate::traits::{Action, Positionable};
+use crate::traits::{Action, LookAround, Movable, Positionable};
 use std::fmt;
 
 pub const VIRUS_VIEW: char = '🦠';
@@ -35,7 +35,20 @@ impl Virus {
 }
 
 impl Action for Virus {}
+impl LookAround for Virus {}
+impl Movable for Virus {
+    fn get_track(&mut self) -> Option<&mut std::collections::HashSet<Point>> {
+        None
+    }
+}
+
 impl Action for Wasteland {}
+impl LookAround for Wasteland {}
+impl Movable for Wasteland {
+    fn get_track(&mut self) -> Option<&mut std::collections::HashSet<Point>> {
+        None
+    }
+}
 
 impl Positionable for Virus {
     fn get_position(&self) -> Point {

@@ -10,7 +10,6 @@ use rand::thread_rng;
 use rand::Rng;
 use std::hash::Hash;
 use std::{collections::HashMap, fmt};
-use traits::Movable;
 
 #[derive(Clone, Copy, Debug, Default, Hash, Eq, PartialEq)]
 pub struct Point {
@@ -58,7 +57,6 @@ impl Field {
         let mut rng = thread_rng();
         let mut matrix: Vec<Vec<Entity>> = vec![];
 
-        //TODO: Перемсотреть записб по координатам
         for y in 0..height {
             let mut row = vec![];
             for x in 0..width {
@@ -110,6 +108,7 @@ impl Field {
                 //Обновляем мапу заместив удаленную сущность на пустую землю
                 entities.add(wasteland);
                 //Обновляем мапу добавив по координатам обновленную сущность
+                //TODO: Перемсотреть записm по координатам
                 entities.add(entity);
             }
         }

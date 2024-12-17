@@ -1,6 +1,5 @@
 use crate::field::Point;
-use crate::traits::Action;
-use crate::traits::Positionable;
+use crate::traits::{Action, LookAround, Movable, Positionable};
 use std::fmt;
 
 pub const MEAT_VIEW: char = '🍖';
@@ -84,4 +83,16 @@ impl Positionable for Grass {
 }
 
 impl Action for Meat {}
+impl LookAround for Meat {}
+impl Movable for Meat {
+    fn get_track(&mut self) -> Option<&mut std::collections::HashSet<Point>> {
+        None
+    }
+}
 impl Action for Grass {}
+impl LookAround for Grass {}
+impl Movable for Grass {
+    fn get_track(&mut self) -> Option<&mut std::collections::HashSet<Point>> {
+        None
+    }
+}

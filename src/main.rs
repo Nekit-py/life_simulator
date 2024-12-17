@@ -65,11 +65,11 @@ fn run() -> Result<(), std::io::Error> {
 }
 
 fn run_test_simulation() -> Result<(), std::io::Error> {
-    let mut stdout = std::io::stdout();
-    terminal::enable_raw_mode()?;
+    // let mut stdout = std::io::stdout();
+    // terminal::enable_raw_mode()?;
     let delay = time::Duration::from_millis(1300);
 
-    stdout.execute(terminal::Clear(ClearType::All))?;
+    // stdout.execute(terminal::Clear(ClearType::All))?;
     let mut field = Field::from_test_case(test_case1());
     // println!("{}", field);
     loop {
@@ -79,7 +79,7 @@ fn run_test_simulation() -> Result<(), std::io::Error> {
         field.simulate(&mut entities);
         // println!("{:#?}", field);
         print!("{}", field);
-        stdout.flush()?;
+        // stdout.flush()?;
 
         thread::sleep(delay);
 

@@ -15,6 +15,8 @@ use std::{
     fmt,
 };
 
+use super::traits::LookAround;
+
 #[derive(Debug, Clone)]
 pub enum Entity {
     Boar(Boar),
@@ -38,6 +40,27 @@ impl Entity {
     }
 }
 
+impl LookAround for Entity {
+    fn calculate_move(&self, height: usize, width: usize, entities: &Entities) -> Option<Point> {
+        match self {
+            Entity::Boar(boar) => boar.calculate_move(height, width, entities),
+            Entity::Lion(lion) => lion.calculate_move(height, width, entities),
+            _ => None,
+        }
+    }
+    fn choose_priority_point(
+        &self,
+        availabele_points: Vec<Point>,
+        entities: &Entities,
+    ) -> Option<Point> {
+        match self {
+            Entity::Boar(boar) => boar.choose_priority_point(availabele_points, entities),
+            Entity::Lion(lion) => lion.choose_priority_point(availabele_points, entities),
+            _ => None,
+        }
+    }
+}
+
 impl Action for Entity {
     fn action(&mut self, height: usize, width: usize, entities: &Entities) {
         match self {
@@ -56,11 +79,11 @@ impl Action for Entity {
 }
 
 impl Movable for Entity {
-    fn get_track(&mut self) -> &mut HashSet<Point> {
+    fn get_track(&mut self) -> Option<&mut HashSet<Point>> {
         match self {
             Entity::Boar(boar) => boar.get_track(),
             Entity::Lion(lion) => lion.get_track(),
-            _ => {}
+            _ => None,
         }
     }
 }

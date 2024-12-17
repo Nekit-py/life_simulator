@@ -51,8 +51,8 @@ impl Boar {
 impl LookAround for Boar {}
 
 impl Movable for Boar {
-    fn get_track(&mut self) -> &mut HashSet<Point> {
-        &mut self.0.track
+    fn get_track(&mut self) -> Option<&mut HashSet<Point>> {
+        Some(&mut self.0.track)
     }
 }
 
@@ -144,8 +144,8 @@ impl Lion {
 
 impl LookAround for Lion {}
 impl Movable for Lion {
-    fn get_track(&mut self) -> &mut HashSet<Point> {
-        &mut self.0.track
+    fn get_track(&mut self) -> Option<&mut HashSet<Point>> {
+        Some(&mut self.0.track)
     }
 }
 
