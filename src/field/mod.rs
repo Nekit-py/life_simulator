@@ -4,8 +4,8 @@ pub mod traits;
 use crate::entities::{Entities, Entity};
 use crate::traits::{Action, Positionable};
 use entities::animals::{Boar, Lion};
-use entities::food::{Grass, Meat};
-use entities::other::{Virus, Wasteland};
+use entities::food::{Grass, Meat, GRASS_VIEW, MEAT_VIEW};
+use entities::other::{Virus, Wasteland, VIRUS_VIEW, WASTELAND_VIEW};
 use rand::thread_rng;
 use rand::Rng;
 use std::hash::Hash;
@@ -97,16 +97,23 @@ impl Field {
                 let point = Point::new(x, y);
                 //Получаем сущность по координатам (точке)
                 let mut entity = entities.pop(&point);
-                //Мутируем сущность
-                entity.action(self.height, self.width, entities);
-                //Создаем пустое поле на месте текущей точки
-                let wasteland = Entity::Wasteland(Wasteland::new(point));
-                self.matrix[y][x] = wasteland.clone();
-                //Получаем координаты куда будет установлена обновленная сущность и ставим ее туда
-                let (to_x, to_y) = entity.get_position().coords();
-                self.matrix[to_y][to_x] = entity.clone();
-                //Обновляем мапу заместив удаленную сущность на пустую землю
-                entities.add(wasteland);
+                let entity_view = entity.view();
+                if entity_view != GRASS_VIEW
+                    || entity_view != MEAT_VIEW
+                    || entity_view != VIRUS_VIEW
+                    || entity_view != WASTELAND_VIEW
+                {
+                    //Мутируем сущность совершая действие
+                    entity.action(self.height, self.width, entities);
+                    //Создаем пустое поле на месте текущей точки
+                    let wasteland = Entity::Wasteland(Wasteland::new(point));
+                    self.matrix[y][x] = wasteland.clone();
+                    //Получаем координаты куда будет установлена обновленная сущность и ставим ее туда
+                    let (to_x, to_y) = entity.get_position().coords();
+                    self.matrix[to_y][to_x] = entity.clone();
+                    //Обновляем мапу заместив удаленную сущность на пустую землю
+                    entities.add(wasteland);
+                }
                 //Обновляем мапу добавив по координатам обновленную сущность
                 //TODO: Перемсотреть записm по координатам
                 entities.add(entity);

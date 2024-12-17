@@ -101,49 +101,47 @@ pub trait Movable: LookAround {
 
 ///Проверка возможных направлений движения
 pub trait LookAround: Positionable {
-    // fn choose_priority_point(
     fn calculate_move(&self, height: usize, width: usize, entities: &Entities) -> Option<Point> {
         //Возможные направления
-        let mut availabele_points: Vec<Point> = Vec::with_capacity(4);
+        let mut available_points: Vec<Point> = Vec::with_capacity(4);
         //Текущая точка животного
         let cur_pos = self.get_position();
         //текущие координаты животного
         let (cur_x, cur_y) = cur_pos.coords();
 
         if cur_y > 0 {
-            availabele_points.push(Point::new(cur_x, cur_y + 1));
+            available_points.push(Point::new(cur_x, cur_y - 1));
         }
 
-        // if cur_y < height - 1 {
-        if cur_y < height - 1 && cur_y > 0 {
+        if cur_y < height - 1 {
             // Индексация начинается с 0
-            availabele_points.push(Point::new(cur_x, cur_y - 1));
+            available_points.push(Point::new(cur_x, cur_y + 1));
         }
 
         // Проверка по оси X (ширина)
         if cur_x > 0 {
-            availabele_points.push(Point::new(cur_x - 1, cur_y));
+            available_points.push(Point::new(cur_x - 1, cur_y));
         }
         if cur_x < width - 1 {
             // Индексация начинается с 0
-            availabele_points.push(Point::new(cur_x + 1, cur_y));
+            available_points.push(Point::new(cur_x + 1, cur_y));
         }
-        self.choose_priority_point(availabele_points, entities)
+        self.choose_priority_point(available_points, entities)
     }
 
     /// В приоритете идем к еде
     fn choose_priority_point(
         &self,
-        availabele_points: Vec<Point>,
+        available_points: Vec<Point>,
         entities: &Entities,
     ) -> Option<Point> {
-        if availabele_points.is_empty() {
+        if available_points.is_empty() {
             return None;
         }
 
         let mut empty_cells = Vec::with_capacity(4);
 
-        for point in availabele_points {
+        for point in available_points {
             let entity = entities.get(&point);
             let entity_view = entity.view();
 
