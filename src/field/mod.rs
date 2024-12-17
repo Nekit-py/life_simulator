@@ -3,13 +3,14 @@ pub mod traits;
 
 use crate::entities::{Entities, Entity};
 use crate::traits::{Action, Positionable};
-use entities::animals::{Boar, Lion};
+use entities::animals::{Boar, Lion, BOAR_VIEW, LION_VIEW};
 use entities::food::{Grass, Meat, GRASS_VIEW, MEAT_VIEW};
 use entities::other::{Virus, Wasteland, VIRUS_VIEW, WASTELAND_VIEW};
 use rand::thread_rng;
 use rand::Rng;
 use std::hash::Hash;
 use std::{collections::HashMap, fmt};
+use std::{thread, time};
 
 #[derive(Clone, Copy, Debug, Default, Hash, Eq, PartialEq)]
 pub struct Point {
@@ -94,15 +95,14 @@ impl Field {
         for y in 0..self.height {
             for x in 0..self.width {
                 //получаем текущую точку
+                let delay = time::Duration::from_millis(1500);
+                thread::sleep(delay);
+                println!("{}", self);
                 let point = Point::new(x, y);
                 //Получаем сущность по координатам (точке)
                 let mut entity = entities.pop(&point);
                 let entity_view = entity.view();
-                if entity_view != GRASS_VIEW
-                    || entity_view != MEAT_VIEW
-                    || entity_view != VIRUS_VIEW
-                    || entity_view != WASTELAND_VIEW
-                {
+                if entity_view == BOAR_VIEW || entity_view == LION_VIEW {
                     //Мутируем сущность совершая действие
                     entity.action(self.height, self.width, entities);
                     //Создаем пустое поле на месте текущей точки

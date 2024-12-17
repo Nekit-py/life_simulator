@@ -79,7 +79,7 @@ fn run_test_simulation() -> Result<(), std::io::Error> {
         let mut entities = field.get_entities();
         field.simulate(&mut entities);
         // println!("{:#?}", field);
-        print!("{}", field);
+        // print!("{}", field);
         // stdout.flush()?;
 
         thread::sleep(delay);

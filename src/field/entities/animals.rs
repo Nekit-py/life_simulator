@@ -5,8 +5,8 @@ use std::fmt;
 
 use super::Entities;
 
-const BOAR_VIEW: char = '🐗';
-const LION_VIEW: char = '🦁';
+pub const BOAR_VIEW: char = '🐗';
+pub const LION_VIEW: char = '🦁';
 
 ///Абстрактная структура животное
 #[derive(Debug, Default, Clone)]
@@ -95,6 +95,7 @@ impl Positionable for Boar {
 }
 
 impl Action for Boar {
+    ///Рассчет последствий хода (голодаем получаем урон и т.п.)
     fn calculate_move_effects(&mut self, entities: &Entities) {
         let arrival_point = self.get_position();
         //Смотрим какая сущность лежит в точку, которую мы пришли
