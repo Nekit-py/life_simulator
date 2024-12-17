@@ -32,13 +32,14 @@ pub trait Satiety {
 
     // Метод для голодания
     fn starve(&mut self) {
-        let new_hunger = self.get_hunger() - 1;
+        let new_hunger = self.get_hunger().saturating_sub(1);
         self.set_hunger(new_hunger.max(0));
     }
 
     // Метод для поедания
     fn eat(&mut self) {
-        let new_hunger = self.get_hunger() + 3;
+        // let new_hunger = self.get_hunger() + 3;
+        let new_hunger = self.get_hunger().saturating_add(3);
         self.set_hunger(new_hunger.min(10));
     }
 
@@ -52,15 +53,15 @@ pub trait Health {
 
     fn take_damage(&mut self, val: Option<u8>) {
         let new_hunger = match val {
-            Some(val) => self.get_health() - val,
-            None => self.get_health() - 1,
+            Some(val) => self.get_health().saturating_sub(val),
+            None => self.get_health().saturating_sub(1),
         };
         self.set_health(new_hunger.max(0));
     }
 
     fn heal(&mut self) {
-        let new_hunger = self.get_health() + 1;
-        self.set_health(new_hunger.min(15));
+        let new_health = self.get_health().saturating_add(1);
+        self.set_health(new_health.min(15));
     }
 
     fn is_alive(&self) -> bool;
