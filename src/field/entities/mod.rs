@@ -10,12 +10,10 @@ use animals::{Boar, Lion};
 use food::{Grass, Meat};
 use other::{Virus, Wasteland};
 
-use std::{
-    collections::{HashMap, HashSet},
-    fmt,
-};
+use core::option::Option;
+use std::{collections::HashMap, fmt};
 
-use super::traits::{Health, LookAround};
+use super::traits::{Health, LookAround, Tracker};
 
 #[derive(Debug, Clone)]
 pub enum Entity {
@@ -40,8 +38,39 @@ impl Entity {
     }
 }
 
+impl Tracker for Entity {
+    fn reset_track(&mut self) {
+        match self {
+            Entity::Boar(boar) => boar.reset_track(),
+            Entity::Lion(lion) => lion.reset_track(),
+            _ => (),
+        }
+    }
+
+    fn insert_point(&mut self, point: Point) {
+        match self {
+            Entity::Boar(boar) => boar.insert_point(point),
+            Entity::Lion(lion) => lion.insert_point(point),
+            _ => (),
+        }
+    }
+
+    fn track_contains(&self, point: &Point) -> Option<bool> {
+        match self {
+            Entity::Boar(boar) => boar.track_contains(point),
+            Entity::Lion(lion) => lion.track_contains(point),
+            _ => None,
+        }
+    }
+}
+
 impl LookAround for Entity {
-    fn calculate_move(&self, height: usize, width: usize, entities: &Entities) -> Option<Point> {
+    fn calculate_move(
+        &mut self,
+        height: usize,
+        width: usize,
+        entities: &Entities,
+    ) -> Option<Point> {
         match self {
             Entity::Boar(boar) => boar.calculate_move(height, width, entities),
             Entity::Lion(lion) => lion.calculate_move(height, width, entities),
@@ -49,7 +78,7 @@ impl LookAround for Entity {
         }
     }
     fn choose_priority_point(
-        &self,
+        &mut self,
         availabele_points: Vec<Point>,
         entities: &Entities,
     ) -> Option<Point> {
@@ -69,24 +98,16 @@ impl Action for Entity {
             _ => {}
         }
     }
-    fn calculate_move_effects(&mut self, entities: &Entities) {
+    fn calculate_move_effects(&mut self, arrival_point: Option<Point>, entities: &Entities) {
         match self {
-            Entity::Boar(boar) => boar.calculate_move_effects(entities),
-            Entity::Lion(lion) => lion.calculate_move_effects(entities),
+            Entity::Boar(boar) => boar.calculate_move_effects(arrival_point, entities),
+            Entity::Lion(lion) => lion.calculate_move_effects(arrival_point, entities),
             _ => {}
         }
     }
 }
 
-impl Movable for Entity {
-    fn get_track(&mut self) -> Option<&mut HashSet<Point>> {
-        match self {
-            Entity::Boar(boar) => boar.get_track(),
-            Entity::Lion(lion) => lion.get_track(),
-            _ => None,
-        }
-    }
-}
+impl Movable for Entity {}
 
 impl Health for Entity {
     fn is_alive(&self) -> Option<bool> {

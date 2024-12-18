@@ -1,13 +1,11 @@
 use rand::seq::SliceRandom;
 
+use super::entities::Entities;
 use crate::entities::food::GRASS_VIEW;
 use crate::entities::other::WASTELAND_VIEW;
 use crate::Point;
 use core::option::Option;
 use rand::thread_rng;
-use std::collections::HashSet;
-
-use super::entities::Entities;
 
 pub trait Positionable {
     fn get_position(&self) -> Point;
@@ -16,11 +14,11 @@ pub trait Positionable {
 
 pub trait Action: Movable + std::fmt::Display {
     fn action(&mut self, height: usize, width: usize, entities: &Entities) {
-        self.move_to(height, width, entities);
-        self.calculate_move_effects(entities);
+        let arrival_point = self.move_to(height, width, entities);
+        self.calculate_move_effects(arrival_point, entities);
     }
 
-    fn calculate_move_effects(&mut self, entities: &Entities) {}
+    fn calculate_move_effects(&mut self, arrival_point: Option<Point>, entities: &Entities) {}
 }
 
 pub trait Satiety {
@@ -67,48 +65,40 @@ pub trait Health {
     fn is_alive(&self) -> Option<bool>;
 }
 
-pub trait Movable: LookAround {
-    fn get_track(&mut self) -> Option<&mut HashSet<Point>>;
+pub trait Tracker {
+    fn reset_track(&mut self);
+    fn insert_point(&mut self, point: Point);
+    fn track_contains(&self, point: &Point) -> Option<bool>;
+}
 
+pub trait Movable: LookAround {
     ///Следование в выбранном направлении на 1 клетку
     ///Должен проверять, что есть в области видимостьи:
     /// - если еда, то к еде,
     /// - если лев, к нему не идем, если мы кабан и наоборот)),
     /// - в остальных случаях рандомное направление за исклюеним пройденного пути
-    fn move_to(&mut self, height: usize, width: usize, entities: &Entities) {
-        // Сохраняем текущую позицию, чтобы освободить `self` для дальнейшей работы
-        let position = self.get_position();
-
-        // Получаем изменяемую ссылку на трек и обновляем её
-        {
-            if let Some(track) = self.get_track() {
-                if track.len() >= 3 {
-                    track.clear();
-                    track.insert(position);
-                }
-            }
-        } // Изменяемая ссылка на `track` завершается здесь
+    fn move_to(&mut self, height: usize, width: usize, entities: &Entities) -> Option<Point> {
+        self.reset_track();
 
         // Перемещаемся по приоритетной точке
         if let Some(point_to_move) = self.calculate_move(height, width, entities) {
-            // Добавляем новую позицию в трек
-            if let Some(track) = self.get_track() {
-                if !track.contains(&point_to_move) {
-                    track.insert(point_to_move);
-                    self.set_position(point_to_move); // Обновляем позицию
-                }
-                // else  {
-                //     //Спорный else
-                //     track.clear();
-                // }
-            }
+            self.insert_point(point_to_move);
+            self.set_position(point_to_move); // Обновляем позицию
+            return Some(point_to_move);
         }
+        None
     }
 }
 
 ///Проверка возможных направлений движения
-pub trait LookAround: Positionable {
-    fn calculate_move(&self, height: usize, width: usize, entities: &Entities) -> Option<Point> {
+pub trait LookAround: Positionable + Tracker {
+    // fn calculate_move(&self, height: usize, width: usize, entities: &Entities) -> Option<Point> {
+    fn calculate_move(
+        &mut self,
+        height: usize,
+        width: usize,
+        entities: &Entities,
+    ) -> Option<Point> {
         //Возможные направления
         let mut available_points: Vec<Point> = Vec::with_capacity(4);
         //Текущая точка животного
@@ -133,12 +123,17 @@ pub trait LookAround: Positionable {
             // Индексация начинается с 0
             available_points.push(Point::new(cur_x + 1, cur_y));
         }
-        self.choose_priority_point(available_points, entities)
+
+        println!("Доступные точки для хода: {:?}", &available_points);
+        let point_to_move = self.choose_priority_point(available_points, entities);
+        println!("Выбранная точка для хода: {:?}", point_to_move);
+        point_to_move
     }
 
     /// В приоритете идем к еде
     fn choose_priority_point(
-        &self,
+        // &self,
+        &mut self,
         available_points: Vec<Point>,
         entities: &Entities,
     ) -> Option<Point> {
@@ -157,20 +152,34 @@ pub trait LookAround: Positionable {
                 if entity_view == GRASS_VIEW {
                     return Some(entity.get_position());
                 } else if entity_view == WASTELAND_VIEW {
+                    match self.track_contains(&point) {
+                        Some(false) => empty_cells.push(entity.get_position()),
+                        Some(true) => (),
+                        None => continue,
+                    }
                     empty_cells.push(entity.get_position())
+                } else {
+                    self.insert_point(point);
                 }
             }
+            // }
         }
 
-        //Если вектор пустырей заполнен хотя бы 1 элементом
+        //Если не найдена еда и вектор пустырей заполнен хотя бы 1 элементом
         if !empty_cells.is_empty() {
+            // let mut rng = thread_rng();
+            // return empty_cells.choose(&mut rng).copied();
+            let available_points = empty_cells
+                .iter()
+                .filter_map(|point| match self.track_contains(point) {
+                    Some(false) => Some(point),
+                    _ => None,
+                })
+                .copied()
+                .collect::<Vec<Point>>();
             let mut rng = thread_rng();
-            return empty_cells.choose(&mut rng).copied();
+            return available_points.choose(&mut rng).copied();
         }
-        // if !empty_cells.is_empty() {
-        //     let mut rng = thread_rng();
-        //     return empty_cells.choose(&mut rng).copied();
-        // }
         None
     }
 }

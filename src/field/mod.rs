@@ -93,12 +93,12 @@ impl Field {
     //TODO проверить, как заменяется на пустую клетку, правильно ли меняются флаги хода, как удаляются и добовляются сущности в мапу
     pub fn simulate(&mut self, entities: &mut Entities) {
         for y in 0..self.height {
+            println!("{}", self);
             {
                 let delay = time::Duration::from_millis(300);
                 thread::sleep(delay);
             }
 
-            println!("{}", self);
             for x in 0..self.width {
                 //получаем текущую точку
                 let point = Point::new(x, y);

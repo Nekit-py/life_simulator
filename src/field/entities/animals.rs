@@ -1,5 +1,6 @@
 use crate::field::Point;
-use crate::traits::{Action, Health, LookAround, Movable, Positionable, Satiety};
+use crate::traits::{Action, Health, LookAround, Movable, Positionable, Satiety, Tracker};
+use core::option::Option;
 use std::collections::HashSet;
 use std::fmt;
 
@@ -50,11 +51,25 @@ impl Boar {
 
 impl LookAround for Boar {}
 
-impl Movable for Boar {
-    fn get_track(&mut self) -> Option<&mut HashSet<Point>> {
-        Some(&mut self.0.track)
+impl Tracker for Boar {
+    fn reset_track(&mut self) {
+        if self.0.track.len() >= 3 {
+            self.0.track.clear();
+            self.0.track.insert(self.0.position);
+        }
+    }
+
+    fn insert_point(&mut self, point: Point) {
+        self.reset_track();
+        self.0.track.insert(point);
+    }
+
+    fn track_contains(&self, point: &Point) -> Option<bool> {
+        Some(self.0.track.contains(point))
     }
 }
+
+impl Movable for Boar {}
 
 impl Satiety for Boar {
     fn get_hunger(&self) -> u8 {
@@ -100,30 +115,40 @@ impl Positionable for Boar {
 
 impl Action for Boar {
     ///Рассчет последствий хода (голодаем получаем урон и т.п.)
-    fn calculate_move_effects(&mut self, entities: &Entities) {
-        let arrival_point = self.get_position();
-        //Смотрим какая сущность лежит в точку, которую мы пришли
-        if let Some(arrival_entity) = entities.get(&arrival_point) {
-            let arrival_entity = arrival_entity.view();
+    // fn calculate_move_effects(&mut self, entities: &Entities) {
+    fn calculate_move_effects(&mut self, arrival_point: Option<Point>, entities: &Entities) {
+        //Смотрим какая сущность лежит в точке, которую мы пришли
+        match arrival_point {
+            Some(arrival_point) => {
+                if let Some(arrival_entity) = entities.get(&arrival_point) {
+                    let arrival_entity = arrival_entity.view();
 
-            if arrival_entity == '🌱' {
-                self.eat();
+                    if arrival_entity == '🌱' {
+                        self.eat();
+                    }
+
+                    if arrival_entity == '⬛' {
+                        self.starve();
+                    }
+
+                    if arrival_entity == '🦠' {
+                        self.take_damage(Some(3));
+                    }
+
+                    if self.is_hungry() {
+                        self.take_damage(None);
+                    }
+
+                    if self.is_fed() {
+                        self.heal();
+                    }
+                }
             }
-
-            if arrival_entity == '⬛' {
+            None => {
+                if self.is_hungry() {
+                    self.take_damage(None);
+                }
                 self.starve();
-            }
-
-            if arrival_entity == '🦠' {
-                self.take_damage(Some(3));
-            }
-
-            if self.is_hungry() {
-                self.take_damage(None);
-            }
-
-            if self.is_fed() {
-                self.heal();
             }
         }
         println!("{:?}", self);
@@ -159,9 +184,23 @@ impl Lion {
 }
 
 impl LookAround for Lion {}
-impl Movable for Lion {
-    fn get_track(&mut self) -> Option<&mut HashSet<Point>> {
-        Some(&mut self.0.track)
+impl Movable for Lion {}
+
+impl Tracker for Lion {
+    fn reset_track(&mut self) {
+        if self.0.track.len() >= 3 {
+            self.0.track.clear();
+            self.0.track.insert(self.0.position);
+        }
+    }
+
+    fn insert_point(&mut self, point: Point) {
+        self.reset_track();
+        self.0.track.insert(point);
+    }
+
+    fn track_contains(&self, point: &Point) -> Option<bool> {
+        Some(self.0.track.contains(point))
     }
 }
 
@@ -208,23 +247,42 @@ impl Positionable for Lion {
 }
 
 impl Action for Lion {
-    fn calculate_move_effects(&mut self, entities: &Entities) {
-        let arrival_point = self.get_position();
-        //Смотрим какая сущность лежит в точку, которую мы пришли
-        if let Some(arrival_entity) = entities.get(&arrival_point) {
-            let arrival_entity = arrival_entity.view();
-            if arrival_entity == '🍖' || arrival_entity == '🐗' {
-                self.eat();
-            }
+    fn calculate_move_effects(&mut self, arrival_point: Option<Point>, entities: &Entities) {
+        //Смотрим какая сущность лежит в точке, которую мы пришли
+        match arrival_point {
+            Some(arrival_point) => {
+                if let Some(arrival_entity) = entities.get(&arrival_point) {
+                    let arrival_entity = arrival_entity.view();
 
-            if arrival_entity == '⬛' {
+                    if arrival_entity == '🌱' {
+                        self.eat();
+                    }
+
+                    if arrival_entity == '⬛' {
+                        self.starve();
+                    }
+
+                    if arrival_entity == '🦠' {
+                        self.take_damage(Some(3));
+                    }
+
+                    if self.is_hungry() {
+                        self.take_damage(None);
+                    }
+
+                    if self.is_fed() {
+                        self.heal();
+                    }
+                }
+            }
+            None => {
+                if self.is_hungry() {
+                    self.take_damage(None);
+                }
                 self.starve();
             }
-
-            if arrival_entity == '🦠' {
-                self.take_damage(Some(3));
-            }
         }
+        println!("{:?}", self);
     }
 }
 

@@ -40,7 +40,6 @@ fn run() -> Result<(), std::io::Error> {
     let delay = time::Duration::from_millis(1300);
 
     let mut field = Field::new(3, 3);
-    println!("{}", field);
 
     loop {
         // Очищаем экран
