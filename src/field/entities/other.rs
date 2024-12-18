@@ -1,3 +1,4 @@
+use crate::entities::Entities;
 use crate::field::Point;
 use crate::traits::{Action, LookAround, Movable, Positionable, Tracker};
 use std::fmt;
@@ -43,11 +44,27 @@ impl Tracker for Virus {
 }
 
 impl Action for Virus {}
-impl LookAround for Virus {}
+impl LookAround for Virus {
+    fn choose_priority_point(
+        &mut self,
+        available_points: Vec<Point>,
+        entities: &Entities,
+    ) -> Option<Point> {
+        None
+    }
+}
 impl Movable for Virus {}
 
 impl Action for Wasteland {}
-impl LookAround for Wasteland {}
+impl LookAround for Wasteland {
+    fn choose_priority_point(
+        &mut self,
+        available_points: Vec<Point>,
+        entities: &Entities,
+    ) -> Option<Point> {
+        None
+    }
+}
 impl Movable for Wasteland {}
 
 impl Tracker for Wasteland {

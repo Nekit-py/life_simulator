@@ -1,11 +1,6 @@
-use rand::seq::SliceRandom;
-
 use super::entities::Entities;
-use crate::entities::food::GRASS_VIEW;
-use crate::entities::other::WASTELAND_VIEW;
 use crate::Point;
 use core::option::Option::{self, Some};
-use rand::thread_rng;
 
 pub trait Positionable {
     fn get_position(&self) -> Point;
@@ -137,42 +132,11 @@ pub trait LookAround: Positionable + Tracker {
     }
 
     /// В приоритете идем к еде
+    /// TODO: Постараться убрать дубль реализации
     fn choose_priority_point(
         // &self,
         &mut self,
         available_points: Vec<Point>,
         entities: &Entities,
-    ) -> Option<Point> {
-        if available_points.is_empty() {
-            return None;
-        }
-
-        let mut empty_cells = Vec::with_capacity(4);
-
-        //Если из доступных точек появляется еда, то сразу ее возвращаем,
-        //иначе копим вектор доступных для хода пустырей
-        for point in available_points {
-            if let Some(entity) = entities.get(&point) {
-                let entity_view = entity.view();
-
-                if entity_view == GRASS_VIEW {
-                    return Some(entity.get_position());
-                } else if entity_view == WASTELAND_VIEW {
-                    match self.track_contains(&point) {
-                        Some(false) => empty_cells.push(entity.get_position()),
-                        _ => continue,
-                    }
-                } else {
-                    self.insert_point(point);
-                }
-            }
-        }
-
-        //Если не найдена еда и вектор пустырей заполнен хотя бы 1 элементом
-        if !empty_cells.is_empty() {
-            let mut rng = thread_rng();
-            return empty_cells.choose(&mut rng).copied();
-        }
-        None
-    }
+    ) -> Option<Point>;
 }

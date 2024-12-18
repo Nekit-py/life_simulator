@@ -1,6 +1,10 @@
+use crate::entities::food::{GRASS_VIEW, MEAT_VIEW};
+use crate::entities::other::{VIRUS_VIEW, WASTELAND_VIEW};
 use crate::field::Point;
 use crate::traits::{Action, Health, LookAround, Movable, Positionable, Satiety, Tracker};
 use core::option::Option;
+use rand::seq::SliceRandom;
+use rand::thread_rng;
 use std::collections::HashSet;
 use std::fmt;
 
@@ -49,7 +53,46 @@ impl Boar {
     }
 }
 
-impl LookAround for Boar {}
+impl LookAround for Boar {
+    fn choose_priority_point(
+        // &self,
+        &mut self,
+        available_points: Vec<Point>,
+        entities: &Entities,
+    ) -> Option<Point> {
+        if available_points.is_empty() {
+            return None;
+        }
+
+        let mut empty_cells = Vec::with_capacity(4);
+
+        //Если из доступных точек появляется еда, то сразу ее возвращаем,
+        //иначе копим вектор доступных для хода пустырей
+        for point in available_points {
+            if let Some(entity) = entities.get(&point) {
+                let entity_view = entity.view();
+
+                if entity_view == GRASS_VIEW {
+                    return Some(entity.get_position());
+                } else if entity_view == WASTELAND_VIEW {
+                    match self.track_contains(&point) {
+                        Some(false) => empty_cells.push(entity.get_position()),
+                        _ => continue,
+                    }
+                } else {
+                    self.insert_point(point);
+                }
+            }
+        }
+
+        //Если не найдена еда и вектор пустырей заполнен хотя бы 1 элементом
+        if !empty_cells.is_empty() {
+            let mut rng = thread_rng();
+            return empty_cells.choose(&mut rng).copied();
+        }
+        None
+    }
+}
 
 impl Tracker for Boar {
     fn reset_track(&mut self) {
@@ -115,7 +158,6 @@ impl Positionable for Boar {
 
 impl Action for Boar {
     ///Рассчет последствий хода (голодаем получаем урон и т.п.)
-    // fn calculate_move_effects(&mut self, entities: &Entities) {
     fn calculate_move_effects(&mut self, arrival_point: Option<Point>, entities: &Entities) {
         //Смотрим какая сущность лежит в точке, которую мы пришли
         match arrival_point {
@@ -123,15 +165,15 @@ impl Action for Boar {
                 if let Some(arrival_entity) = entities.get(&arrival_point) {
                     let arrival_entity = arrival_entity.view();
 
-                    if arrival_entity == '🌱' {
+                    if arrival_entity == GRASS_VIEW {
                         self.eat();
                     }
 
-                    if arrival_entity == '⬛' {
+                    if arrival_entity == WASTELAND_VIEW {
                         self.starve();
                     }
 
-                    if arrival_entity == '🦠' {
+                    if arrival_entity == VIRUS_VIEW {
                         self.take_damage(Some(3));
                     }
 
@@ -183,7 +225,46 @@ impl Lion {
     }
 }
 
-impl LookAround for Lion {}
+impl LookAround for Lion {
+    fn choose_priority_point(
+        // &self,
+        &mut self,
+        available_points: Vec<Point>,
+        entities: &Entities,
+    ) -> Option<Point> {
+        if available_points.is_empty() {
+            return None;
+        }
+
+        let mut empty_cells = Vec::with_capacity(4);
+
+        //Если из доступных точек появляется еда, то сразу ее возвращаем,
+        //иначе копим вектор доступных для хода пустырей
+        for point in available_points {
+            if let Some(entity) = entities.get(&point) {
+                let entity_view = entity.view();
+
+                if entity_view == MEAT_VIEW || entity_view == BOAR_VIEW {
+                    return Some(entity.get_position());
+                } else if entity_view == WASTELAND_VIEW {
+                    match self.track_contains(&point) {
+                        Some(false) => empty_cells.push(entity.get_position()),
+                        _ => continue,
+                    }
+                } else {
+                    self.insert_point(point);
+                }
+            }
+        }
+
+        //Если не найдена еда и вектор пустырей заполнен хотя бы 1 элементом
+        if !empty_cells.is_empty() {
+            let mut rng = thread_rng();
+            return empty_cells.choose(&mut rng).copied();
+        }
+        None
+    }
+}
 impl Movable for Lion {}
 
 impl Tracker for Lion {
@@ -254,15 +335,15 @@ impl Action for Lion {
                 if let Some(arrival_entity) = entities.get(&arrival_point) {
                     let arrival_entity = arrival_entity.view();
 
-                    if arrival_entity == '🌱' {
+                    if arrival_entity == BOAR_VIEW || arrival_entity == MEAT_VIEW {
                         self.eat();
                     }
 
-                    if arrival_entity == '⬛' {
+                    if arrival_entity == WASTELAND_VIEW {
                         self.starve();
                     }
 
-                    if arrival_entity == '🦠' {
+                    if arrival_entity == VIRUS_VIEW {
                         self.take_damage(Some(3));
                     }
 

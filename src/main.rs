@@ -8,7 +8,7 @@ use crossterm::{
     terminal::{self, ClearType},
     ExecutableCommand,
 };
-use entities::animals::Boar;
+use entities::animals::{Boar, Lion};
 use entities::food::Grass;
 use entities::other::Wasteland;
 use std::io::Write;
@@ -26,7 +26,8 @@ fn test_case1() -> Vec<Vec<Entity>> {
             Entity::Wasteland(Wasteland::new(Point::new(2, 1))),
         ],
         vec![
-            Entity::Wasteland(Wasteland::new(Point::new(0, 2))),
+            // Entity::Wasteland(Wasteland::new(Point::new(0, 2))),
+            Entity::Lion(Lion::new(Point::new(0, 2))),
             Entity::Wasteland(Wasteland::new(Point::new(1, 2))),
             Entity::Grass(Grass::new(Point::new(2, 2))),
         ],
