@@ -53,7 +53,7 @@ impl LookAround for Boar {}
 
 impl Tracker for Boar {
     fn reset_track(&mut self) {
-        if self.0.track.len() >= 3 {
+        if self.0.track.len() == 3 {
             self.0.track.clear();
             self.0.track.insert(self.0.position);
         }

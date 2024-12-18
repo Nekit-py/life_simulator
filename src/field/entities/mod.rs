@@ -196,6 +196,7 @@ impl Entities {
     }
 
     pub fn get(&self, point: &Point) -> Option<&Entity> {
+        println!("Длина набора сущностей: {}", self.collection.len());
         self.collection.get(point)
     }
 }

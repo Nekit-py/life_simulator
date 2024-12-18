@@ -4,7 +4,7 @@ use super::entities::Entities;
 use crate::entities::food::GRASS_VIEW;
 use crate::entities::other::WASTELAND_VIEW;
 use crate::Point;
-use core::option::Option;
+use core::option::Option::{self, Some};
 use rand::thread_rng;
 
 pub trait Positionable {
@@ -92,7 +92,6 @@ pub trait Movable: LookAround {
 
 ///Проверка возможных направлений движения
 pub trait LookAround: Positionable + Tracker {
-    // fn calculate_move(&self, height: usize, width: usize, entities: &Entities) -> Option<Point> {
     fn calculate_move(
         &mut self,
         height: usize,
@@ -125,9 +124,16 @@ pub trait LookAround: Positionable + Tracker {
         }
 
         println!("Доступные точки для хода: {:?}", &available_points);
-        let point_to_move = self.choose_priority_point(available_points, entities);
-        println!("Выбранная точка для хода: {:?}", point_to_move);
-        point_to_move
+        match self.choose_priority_point(available_points, entities) {
+            Some(point_to_move) => {
+                println!("Выбранная точка для хода: {:?}", point_to_move);
+                Some(point_to_move)
+            }
+            _ => {
+                println!("Нет доступных ходов");
+                None
+            }
+        }
     }
 
     /// В приоритете идем к еде
@@ -154,31 +160,18 @@ pub trait LookAround: Positionable + Tracker {
                 } else if entity_view == WASTELAND_VIEW {
                     match self.track_contains(&point) {
                         Some(false) => empty_cells.push(entity.get_position()),
-                        Some(true) => (),
-                        None => continue,
+                        _ => continue,
                     }
-                    empty_cells.push(entity.get_position())
                 } else {
                     self.insert_point(point);
                 }
             }
-            // }
         }
 
         //Если не найдена еда и вектор пустырей заполнен хотя бы 1 элементом
         if !empty_cells.is_empty() {
-            // let mut rng = thread_rng();
-            // return empty_cells.choose(&mut rng).copied();
-            let available_points = empty_cells
-                .iter()
-                .filter_map(|point| match self.track_contains(point) {
-                    Some(false) => Some(point),
-                    _ => None,
-                })
-                .copied()
-                .collect::<Vec<Point>>();
             let mut rng = thread_rng();
-            return available_points.choose(&mut rng).copied();
+            return empty_cells.choose(&mut rng).copied();
         }
         None
     }

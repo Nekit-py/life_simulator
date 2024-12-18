@@ -90,7 +90,6 @@ impl Field {
         Entities::new(collection)
     }
 
-    //TODO проверить, как заменяется на пустую клетку, правильно ли меняются флаги хода, как удаляются и добовляются сущности в мапу
     pub fn simulate(&mut self, entities: &mut Entities) {
         for y in 0..self.height {
             println!("{}", self);
@@ -131,11 +130,11 @@ impl Field {
                             //Обновляем мапу заместив удаленную сущность на пустырь
                             entities.add(Entity::Wasteland(Wasteland::new(dead_entity_position)));
                         }
-                        None => (),
+                        None => {}
                     }
-                    // println!("{:?}", entities.get(&point));
+                } else {
+                    entities.add(entity);
                 }
-                // println!("{:#?}", &entities);
             }
         }
     }
