@@ -68,6 +68,10 @@ impl Satiety for Boar {
     fn is_hungry(&self) -> bool {
         self.0.hunger == 0
     }
+
+    fn is_fed(&self) -> bool {
+        self.0.hunger == 10
+    }
 }
 
 impl Health for Boar {
@@ -113,8 +117,13 @@ impl Action for Boar {
             if arrival_entity == '🦠' {
                 self.take_damage(Some(3));
             }
+
             if self.is_hungry() {
                 self.take_damage(None);
+            }
+
+            if self.is_fed() {
+                self.heal();
             }
         }
         println!("{:?}", self);
@@ -168,6 +177,10 @@ impl Satiety for Lion {
     fn is_hungry(&self) -> bool {
         self.0.hunger == 0
     }
+
+    fn is_fed(&self) -> bool {
+        self.0.hunger == 10
+    }
 }
 
 impl Health for Lion {
@@ -198,7 +211,6 @@ impl Action for Lion {
     fn calculate_move_effects(&mut self, entities: &Entities) {
         let arrival_point = self.get_position();
         //Смотрим какая сущность лежит в точку, которую мы пришли
-        // let arrival_entity = entities.get(&arrival_point).view();
         if let Some(arrival_entity) = entities.get(&arrival_point) {
             let arrival_entity = arrival_entity.view();
             if arrival_entity == '🍖' || arrival_entity == '🐗' {

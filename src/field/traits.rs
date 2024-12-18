@@ -14,7 +14,6 @@ pub trait Positionable {
     fn set_position(&mut self, point: Point);
 }
 
-// pub trait Action: Movable + Satiety + Health + std::fmt::Display {
 pub trait Action: Movable + std::fmt::Display {
     fn action(&mut self, height: usize, width: usize, entities: &Entities) {
         self.move_to(height, width, entities);
@@ -33,17 +32,18 @@ pub trait Satiety {
     // Метод для голодания
     fn starve(&mut self) {
         let new_hunger = self.get_hunger().saturating_sub(1);
-        self.set_hunger(new_hunger.max(0));
+        self.set_hunger(new_hunger);
     }
 
     // Метод для поедания
     fn eat(&mut self) {
-        // let new_hunger = self.get_hunger() + 3;
         let new_hunger = self.get_hunger().saturating_add(3);
         self.set_hunger(new_hunger.min(10));
     }
 
     fn is_hungry(&self) -> bool;
+
+    fn is_fed(&self) -> bool;
 }
 
 pub trait Health {
@@ -81,24 +81,26 @@ pub trait Movable: LookAround {
 
         // Получаем изменяемую ссылку на трек и обновляем её
         {
-            let track = self.get_track().unwrap();
-            if track.len() == 3 {
-                track.clear();
-                track.insert(position);
+            if let Some(track) = self.get_track() {
+                if track.len() >= 3 {
+                    track.clear();
+                    track.insert(position);
+                }
             }
         } // Изменяемая ссылка на `track` завершается здесь
 
         // Перемещаемся по приоритетной точке
         if let Some(point_to_move) = self.calculate_move(height, width, entities) {
             // Добавляем новую позицию в трек
-            let track = self.get_track().unwrap(); // Создаём новую изменяемую ссылку на трек
-
-            if !track.contains(&point_to_move) {
-                track.insert(point_to_move);
-                self.set_position(point_to_move); // Обновляем позицию
-            } else {
-                //Сопрный else
-                track.clear();
+            if let Some(track) = self.get_track() {
+                if !track.contains(&point_to_move) {
+                    track.insert(point_to_move);
+                    self.set_position(point_to_move); // Обновляем позицию
+                }
+                // else  {
+                //     //Спорный else
+                //     track.clear();
+                // }
             }
         }
     }
@@ -146,6 +148,8 @@ pub trait LookAround: Positionable {
 
         let mut empty_cells = Vec::with_capacity(4);
 
+        //Если из доступных точек появляется еда, то сразу ее возвращаем,
+        //иначе копим вектор доступных для хода пустырей
         for point in available_points {
             if let Some(entity) = entities.get(&point) {
                 let entity_view = entity.view();
@@ -158,10 +162,15 @@ pub trait LookAround: Positionable {
             }
         }
 
+        //Если вектор пустырей заполнен хотя бы 1 элементом
         if !empty_cells.is_empty() {
             let mut rng = thread_rng();
             return empty_cells.choose(&mut rng).copied();
         }
+        // if !empty_cells.is_empty() {
+        //     let mut rng = thread_rng();
+        //     return empty_cells.choose(&mut rng).copied();
+        // }
         None
     }
 }

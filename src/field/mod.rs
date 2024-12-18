@@ -112,7 +112,7 @@ impl Field {
                     //Создаем пустое поле на месте текущей точки
                     let wasteland = Entity::Wasteland(Wasteland::new(point));
                     self.matrix[y][x] = wasteland.clone();
-                    //Обновляем мапу заместив удаленную сущность на пустую землю
+                    //Обновляем мапу заместив удаленную сущность на пустырь
                     entities.add(wasteland.clone());
 
                     match entity.is_alive() {
@@ -128,7 +128,7 @@ impl Field {
                             let dead_entity_position = entity.get_position();
                             let (to_x, to_y) = dead_entity_position.coords();
                             self.matrix[to_y][to_x] = wasteland;
-                            //Обновляем мапу заместив удаленную сущность на пустую землю
+                            //Обновляем мапу заместив удаленную сущность на пустырь
                             entities.add(Entity::Wasteland(Wasteland::new(dead_entity_position)));
                         }
                         None => (),

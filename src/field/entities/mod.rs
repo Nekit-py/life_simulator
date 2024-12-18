@@ -175,6 +175,6 @@ impl Entities {
     }
 
     pub fn get(&self, point: &Point) -> Option<&Entity> {
-        self.collection.get(&point)
+        self.collection.get(point)
     }
 }
