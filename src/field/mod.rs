@@ -2,7 +2,7 @@ pub mod entities;
 pub mod traits;
 
 use crate::entities::{Entities, Entity};
-use crate::traits::{Action, Positionable};
+use crate::traits::{Action, Health, Movable, Positionable};
 use entities::animals::{Boar, Lion, BOAR_VIEW, LION_VIEW};
 use entities::food::{Grass, Meat, GRASS_VIEW, MEAT_VIEW};
 use entities::other::{Virus, Wasteland, VIRUS_VIEW, WASTELAND_VIEW};
@@ -93,30 +93,49 @@ impl Field {
     //TODO проверить, как заменяется на пустую клетку, правильно ли меняются флаги хода, как удаляются и добовляются сущности в мапу
     pub fn simulate(&mut self, entities: &mut Entities) {
         for y in 0..self.height {
+            {
+                let delay = time::Duration::from_millis(300);
+                thread::sleep(delay);
+            }
+
+            println!("{}", self);
             for x in 0..self.width {
                 //получаем текущую точку
-                let delay = time::Duration::from_millis(1500);
-                thread::sleep(delay);
-                println!("{}", self);
                 let point = Point::new(x, y);
                 //Получаем сущность по координатам (точке)
                 let mut entity = entities.pop(&point);
                 let entity_view = entity.view();
+
                 if entity_view == BOAR_VIEW || entity_view == LION_VIEW {
                     //Мутируем сущность совершая действие
                     entity.action(self.height, self.width, entities);
                     //Создаем пустое поле на месте текущей точки
                     let wasteland = Entity::Wasteland(Wasteland::new(point));
                     self.matrix[y][x] = wasteland.clone();
-                    //Получаем координаты куда будет установлена обновленная сущность и ставим ее туда
-                    let (to_x, to_y) = entity.get_position().coords();
-                    self.matrix[to_y][to_x] = entity.clone();
                     //Обновляем мапу заместив удаленную сущность на пустую землю
-                    entities.add(wasteland);
+                    entities.add(wasteland.clone());
+
+                    match entity.is_alive() {
+                        Some(true) => {
+                            //Получаем координаты куда будет установлена обновленная сущность и ставим ее туда
+                            let (to_x, to_y) = entity.get_position().coords();
+                            self.matrix[to_y][to_x] = entity.clone();
+                            //Обновляем мапу добавив по координатам обновленную сущность
+                            entities.add(entity);
+                        }
+                        Some(false) => {
+                            //Получаем координаты куда будет установлена "пустота" после смерти и ставим ее туда
+                            let dead_entity_position = entity.get_position();
+                            let (to_x, to_y) = dead_entity_position.coords();
+                            self.matrix[to_y][to_x] = wasteland;
+                            //Обновляем мапу заместив удаленную сущность на пустую землю
+                            entities.add(Entity::Wasteland(Wasteland::new(dead_entity_position)));
+                        }
+                        None => (),
+                    }
+                    // println!("{:?}", entities.get(&point));
                 }
-                //Обновляем мапу добавив по координатам обновленную сущность
-                //TODO: Перемсотреть записm по координатам
-                entities.add(entity);
+                // println!("{:#?}", &entities);
             }
         }
     }

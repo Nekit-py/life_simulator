@@ -64,7 +64,7 @@ pub trait Health {
         self.set_health(new_health.min(15));
     }
 
-    fn is_alive(&self) -> bool;
+    fn is_alive(&self) -> Option<bool>;
 }
 
 pub trait Movable: LookAround {
@@ -90,11 +90,16 @@ pub trait Movable: LookAround {
 
         // Перемещаемся по приоритетной точке
         if let Some(point_to_move) = self.calculate_move(height, width, entities) {
-            self.set_position(point_to_move); // Обновляем позицию
-
             // Добавляем новую позицию в трек
             let track = self.get_track().unwrap(); // Создаём новую изменяемую ссылку на трек
-            track.insert(point_to_move);
+
+            if !track.contains(&point_to_move) {
+                track.insert(point_to_move);
+                self.set_position(point_to_move); // Обновляем позицию
+            } else {
+                //Сопрный else
+                track.clear();
+            }
         }
     }
 }
@@ -142,13 +147,14 @@ pub trait LookAround: Positionable {
         let mut empty_cells = Vec::with_capacity(4);
 
         for point in available_points {
-            let entity = entities.get(&point);
-            let entity_view = entity.view();
+            if let Some(entity) = entities.get(&point) {
+                let entity_view = entity.view();
 
-            if entity_view == GRASS_VIEW {
-                return Some(entity.get_position());
-            } else if entity_view == WASTELAND_VIEW {
-                empty_cells.push(entity.get_position())
+                if entity_view == GRASS_VIEW {
+                    return Some(entity.get_position());
+                } else if entity_view == WASTELAND_VIEW {
+                    empty_cells.push(entity.get_position())
+                }
             }
         }
 

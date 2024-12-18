@@ -15,7 +15,7 @@ use std::{
     fmt,
 };
 
-use super::traits::LookAround;
+use super::traits::{Health, LookAround};
 
 #[derive(Debug, Clone)]
 pub enum Entity {
@@ -88,6 +88,31 @@ impl Movable for Entity {
     }
 }
 
+impl Health for Entity {
+    fn is_alive(&self) -> Option<bool> {
+        match self {
+            Entity::Boar(boar) => boar.is_alive(),
+            Entity::Lion(lion) => lion.is_alive(),
+            _ => None,
+        }
+    }
+    fn get_health(&self) -> u8 {
+        match self {
+            Entity::Boar(boar) => boar.get_health(),
+            Entity::Lion(lion) => lion.get_health(),
+            _ => 0u8,
+        }
+    }
+
+    fn set_health(&mut self, health: u8) {
+        match self {
+            Entity::Boar(boar) => boar.set_health(health),
+            Entity::Lion(lion) => lion.set_health(health),
+            _ => (),
+        }
+    }
+}
+
 impl Positionable for Entity {
     fn get_position(&self) -> Point {
         match self {
@@ -130,6 +155,7 @@ impl Default for Entity {
     }
 }
 
+#[derive(Debug)]
 pub struct Entities {
     collection: HashMap<Point, Entity>,
 }
@@ -148,7 +174,7 @@ impl Entities {
         self.collection.insert(point_key, entity);
     }
 
-    pub fn get(&self, point: &Point) -> &Entity {
-        self.collection.get(&point).unwrap()
+    pub fn get(&self, point: &Point) -> Option<&Entity> {
+        self.collection.get(&point)
     }
 }

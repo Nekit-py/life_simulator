@@ -79,8 +79,8 @@ impl Health for Boar {
         self.0.health = health
     }
 
-    fn is_alive(&self) -> bool {
-        self.0.health != 0
+    fn is_alive(&self) -> Option<bool> {
+        Some(self.0.health != 0)
     }
 }
 
@@ -99,19 +99,25 @@ impl Action for Boar {
     fn calculate_move_effects(&mut self, entities: &Entities) {
         let arrival_point = self.get_position();
         //Смотрим какая сущность лежит в точку, которую мы пришли
-        let arrival_entity = entities.get(&arrival_point).view();
+        if let Some(arrival_entity) = entities.get(&arrival_point) {
+            let arrival_entity = arrival_entity.view();
 
-        if arrival_entity == '🌱' {
-            self.eat();
-        }
+            if arrival_entity == '🌱' {
+                self.eat();
+            }
 
-        if arrival_entity == '⬛' {
-            self.starve();
-        }
+            if arrival_entity == '⬛' {
+                self.starve();
+            }
 
-        if arrival_entity == '🦠' {
-            self.take_damage(Some(3));
+            if arrival_entity == '🦠' {
+                self.take_damage(Some(3));
+            }
+            if self.is_hungry() {
+                self.take_damage(None);
+            }
         }
+        println!("{:?}", self);
     }
 }
 
@@ -173,8 +179,8 @@ impl Health for Lion {
         self.0.health = health
     }
 
-    fn is_alive(&self) -> bool {
-        self.0.health != 0
+    fn is_alive(&self) -> Option<bool> {
+        Some(self.0.health != 0)
     }
 }
 
@@ -192,18 +198,20 @@ impl Action for Lion {
     fn calculate_move_effects(&mut self, entities: &Entities) {
         let arrival_point = self.get_position();
         //Смотрим какая сущность лежит в точку, которую мы пришли
-        let arrival_entity = entities.get(&arrival_point).view();
+        // let arrival_entity = entities.get(&arrival_point).view();
+        if let Some(arrival_entity) = entities.get(&arrival_point) {
+            let arrival_entity = arrival_entity.view();
+            if arrival_entity == '🍖' || arrival_entity == '🐗' {
+                self.eat();
+            }
 
-        if arrival_entity == '🍖' || arrival_entity == '🐗' {
-            self.eat();
-        }
+            if arrival_entity == '⬛' {
+                self.starve();
+            }
 
-        if arrival_entity == '⬛' {
-            self.starve();
-        }
-
-        if arrival_entity == '🦠' {
-            self.take_damage(Some(3));
+            if arrival_entity == '🦠' {
+                self.take_damage(Some(3));
+            }
         }
     }
 }
