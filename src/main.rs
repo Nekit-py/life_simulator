@@ -3,6 +3,7 @@ mod field;
 use field::*;
 
 use crate::entities::Entity;
+use core::time;
 use crossterm::{
     event::KeyCode,
     terminal::{self, ClearType},
@@ -12,7 +13,7 @@ use entities::animals::{Boar, Lion};
 use entities::food::Grass;
 use entities::other::Wasteland;
 use std::io::Write;
-use std::{thread, time};
+use std::thread;
 fn test_case1() -> Vec<Vec<Entity>> {
     vec![
         vec![
@@ -35,26 +36,29 @@ fn test_case1() -> Vec<Vec<Entity>> {
 }
 
 fn run() -> Result<(), std::io::Error> {
-    // Инициализация терминала
     let mut stdout = std::io::stdout();
     terminal::enable_raw_mode()?;
-    let delay = time::Duration::from_millis(1300);
+    // let delay = time::Duration::from_millis(300);
 
-    let mut field = Field::new(3, 3);
+    // let mut field = Field::from_test_case(test_case1());
+    let mut field = Field::new(10, 10);
+    let mut entities = field.get_entities();
 
-    loop {
-        // Очищаем экран
-        // stdout.execute(terminal::Clear(ClearType::All))?;
+    // Обеспечиваем отключение "сырого режима" при выходе
+    let _guard = std::panic::catch_unwind(|| {
+        terminal::disable_raw_mode().ok();
+    });
 
-        let mut entities = field.get_entities();
-        field.simulate(&mut entities);
-        println!("{}", field);
-        // Обновляем экран
+    stdout.execute(terminal::Clear(ClearType::All))?;
+    while entities.total_animals() > 0 {
+        stdout.execute(terminal::Clear(ClearType::All))?;
+        field.simulate(&mut entities)?;
         stdout.flush()?;
-        thread::sleep(delay);
 
-        // Проверка нажатия клавиши для выхода (например, ESC)
-        if crossterm::event::poll(delay)? {
+        // thread::sleep(delay);
+
+        // Выход из цикла
+        if crossterm::event::poll(time::Duration::from_millis(50))? {
             if let crossterm::event::Event::Key(key_event) = crossterm::event::read()? {
                 if key_event.code == KeyCode::Esc {
                     break;
@@ -62,29 +66,35 @@ fn run() -> Result<(), std::io::Error> {
             }
         }
     }
+
+    // Отключаем "сырой режим" перед выходом
+    terminal::disable_raw_mode()?;
     Ok(())
 }
 
 fn run_test_simulation() -> Result<(), std::io::Error> {
-    // let mut stdout = std::io::stdout();
-    // terminal::enable_raw_mode()?;
-    let delay = time::Duration::from_millis(1300);
+    let mut stdout = std::io::stdout();
+    terminal::enable_raw_mode()?;
+    // let delay = time::Duration::from_millis(300);
 
-    // stdout.execute(terminal::Clear(ClearType::All))?;
     let mut field = Field::from_test_case(test_case1());
-    // println!("{}", field);
-    loop {
-        // stdout.execute(terminal::Clear(ClearType::All))?;
-        // println!("{:#?}", field);
-        let mut entities = field.get_entities();
-        field.simulate(&mut entities);
-        // println!("{:#?}", field);
-        // print!("{}", field);
-        // stdout.flush()?;
+    let mut entities = field.get_entities();
 
-        thread::sleep(delay);
+    // Обеспечиваем отключение "сырого режима" при выходе
+    let _guard = std::panic::catch_unwind(|| {
+        terminal::disable_raw_mode().ok();
+    });
 
-        if crossterm::event::poll(delay)? {
+    stdout.execute(terminal::Clear(ClearType::All))?;
+    while entities.total_animals() > 0 {
+        stdout.execute(terminal::Clear(ClearType::All))?;
+        field.simulate(&mut entities)?;
+        stdout.flush()?;
+
+        // thread::sleep(delay);
+
+        // Выход из цикла
+        if crossterm::event::poll(time::Duration::from_millis(50))? {
             if let crossterm::event::Event::Key(key_event) = crossterm::event::read()? {
                 if key_event.code == KeyCode::Esc {
                     break;
@@ -92,11 +102,14 @@ fn run_test_simulation() -> Result<(), std::io::Error> {
             }
         }
     }
+
+    // Отключаем "сырой режим" перед выходом
+    terminal::disable_raw_mode()?;
     Ok(())
 }
 
 fn main() -> Result<(), std::io::Error> {
-    // run()?;
-    run_test_simulation()?;
+    run()?;
+    // run_test_simulation()?;
     Ok(())
 }

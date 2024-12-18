@@ -55,7 +55,6 @@ impl Boar {
 
 impl LookAround for Boar {
     fn choose_priority_point(
-        // &self,
         &mut self,
         available_points: Vec<Point>,
         entities: &Entities,
@@ -159,42 +158,62 @@ impl Positionable for Boar {
 impl Action for Boar {
     ///Рассчет последствий хода (голодаем получаем урон и т.п.)
     fn calculate_move_effects(&mut self, arrival_point: Option<Point>, entities: &Entities) {
-        //Смотрим какая сущность лежит в точке, которую мы пришли
-        match arrival_point {
-            Some(arrival_point) => {
-                if let Some(arrival_entity) = entities.get(&arrival_point) {
-                    let arrival_entity = arrival_entity.view();
-
-                    if arrival_entity == GRASS_VIEW {
-                        self.eat();
-                    }
-
-                    if arrival_entity == WASTELAND_VIEW {
-                        self.starve();
-                    }
-
-                    if arrival_entity == VIRUS_VIEW {
-                        self.take_damage(Some(3));
-                    }
-
-                    if self.is_hungry() {
-                        self.take_damage(None);
-                    }
-
-                    if self.is_fed() {
-                        self.heal();
-                    }
+        if let Some(point) = arrival_point {
+            if let Some(arrival_entity) = entities.get(&point) {
+                match arrival_entity.view() {
+                    GRASS_VIEW => self.eat(),
+                    WASTELAND_VIEW => self.starve(),
+                    VIRUS_VIEW => self.take_damage(Some(3)),
+                    _ => {}
                 }
             }
-            None => {
-                if self.is_hungry() {
-                    self.take_damage(None);
-                }
-                self.starve();
-            }
+        } else {
+            self.starve();
         }
-        println!("{:?}", self);
+
+        // Общая логика для голода и исцеления
+        if self.is_hungry() {
+            self.take_damage(None);
+        } else if self.is_fed() {
+            self.heal();
+        }
     }
+    // fn calculate_move_effects(&mut self, arrival_point: Option<Point>, entities: &Entities) {
+    //     //Смотрим какая сущность лежит в точке, которую мы пришли
+    //     match arrival_point {
+    //         Some(arrival_point) => {
+    //             if let Some(arrival_entity) = entities.get(&arrival_point) {
+    //                 let arrival_entity = arrival_entity.view();
+    //
+    //                 if arrival_entity == GRASS_VIEW {
+    //                     self.eat();
+    //                 }
+    //
+    //                 if arrival_entity == WASTELAND_VIEW {
+    //                     self.starve();
+    //                 }
+    //
+    //                 if arrival_entity == VIRUS_VIEW {
+    //                     self.take_damage(Some(3));
+    //                 }
+    //
+    //                 if self.is_hungry() {
+    //                     self.take_damage(None);
+    //                 }
+    //
+    //                 if self.is_fed() {
+    //                     self.heal();
+    //                 }
+    //             }
+    //         }
+    //         None => {
+    //             if self.is_hungry() {
+    //                 self.take_damage(None);
+    //             }
+    //             self.starve();
+    //         }
+    //     }
+    // }
 }
 
 impl fmt::Display for Boar {
@@ -227,7 +246,6 @@ impl Lion {
 
 impl LookAround for Lion {
     fn choose_priority_point(
-        // &self,
         &mut self,
         available_points: Vec<Point>,
         entities: &Entities,
@@ -243,16 +261,27 @@ impl LookAround for Lion {
         for point in available_points {
             if let Some(entity) = entities.get(&point) {
                 let entity_view = entity.view();
+                let entity_position = entity.get_position();
 
-                if entity_view == MEAT_VIEW || entity_view == BOAR_VIEW {
-                    return Some(entity.get_position());
-                } else if entity_view == WASTELAND_VIEW {
-                    match self.track_contains(&point) {
-                        Some(false) => empty_cells.push(entity.get_position()),
-                        _ => continue,
+                // if entity_view == MEAT_VIEW || entity_view == BOAR_VIEW {
+                //     return Some(entity_position);
+                // } else if entity_view == WASTELAND_VIEW {
+                //     match self.track_contains(&point) {
+                //         Some(false) => empty_cells.push(entity_position),
+                //         _ => continue,
+                //     }
+                // } else {
+                //     self.insert_point(point);
+                // }
+                match entity_view {
+                    MEAT_VIEW | BOAR_VIEW => return Some(entity_position),
+                    // WASTELAND_VIEW if self.track_contains(&point).unwrap_or(false) == false => {
+                    WASTELAND_VIEW if !self.track_contains(&point).unwrap_or(false) => {
+                        empty_cells.push(entity_position);
                     }
-                } else {
-                    self.insert_point(point);
+                    _ => {
+                        self.insert_point(point);
+                    }
                 }
             }
         }
@@ -329,42 +358,63 @@ impl Positionable for Lion {
 
 impl Action for Lion {
     fn calculate_move_effects(&mut self, arrival_point: Option<Point>, entities: &Entities) {
-        //Смотрим какая сущность лежит в точке, которую мы пришли
-        match arrival_point {
-            Some(arrival_point) => {
-                if let Some(arrival_entity) = entities.get(&arrival_point) {
-                    let arrival_entity = arrival_entity.view();
-
-                    if arrival_entity == BOAR_VIEW || arrival_entity == MEAT_VIEW {
-                        self.eat();
-                    }
-
-                    if arrival_entity == WASTELAND_VIEW {
-                        self.starve();
-                    }
-
-                    if arrival_entity == VIRUS_VIEW {
-                        self.take_damage(Some(3));
-                    }
-
-                    if self.is_hungry() {
-                        self.take_damage(None);
-                    }
-
-                    if self.is_fed() {
-                        self.heal();
-                    }
+        if let Some(point) = arrival_point {
+            if let Some(arrival_entity) = entities.get(&point) {
+                match arrival_entity.view() {
+                    BOAR_VIEW | MEAT_VIEW => self.eat(),
+                    WASTELAND_VIEW => self.starve(),
+                    VIRUS_VIEW => self.take_damage(Some(3)),
+                    _ => {}
                 }
             }
-            None => {
-                if self.is_hungry() {
-                    self.take_damage(None);
-                }
-                self.starve();
-            }
+        } else {
+            self.starve();
         }
-        println!("{:?}", self);
+
+        // Общая логика для голода и исцеления
+        if self.is_hungry() {
+            self.take_damage(None);
+        } else if self.is_fed() {
+            self.heal();
+        }
     }
+    // fn calculate_move_effects(&mut self, arrival_point: Option<Point>, entities: &Entities) {
+    //     //Смотрим какая сущность лежит в точке, которую мы пришли
+    //     match arrival_point {
+    //         Some(arrival_point) => {
+    //             if let Some(arrival_entity) = entities.get(&arrival_point) {
+    //                 let arrival_entity = arrival_entity.view();
+    //
+    //                 if arrival_entity == BOAR_VIEW || arrival_entity == MEAT_VIEW {
+    //                     self.eat();
+    //                     // entities.animal_died();
+    //                 }
+    //
+    //                 if arrival_entity == WASTELAND_VIEW {
+    //                     self.starve();
+    //                 }
+    //
+    //                 if arrival_entity == VIRUS_VIEW {
+    //                     self.take_damage(Some(3));
+    //                 }
+    //
+    //                 if self.is_hungry() {
+    //                     self.take_damage(None);
+    //                 }
+    //
+    //                 if self.is_fed() {
+    //                     self.heal();
+    //                 }
+    //             }
+    //         }
+    //         None => {
+    //             if self.is_hungry() {
+    //                 self.take_damage(None);
+    //             }
+    //             self.starve();
+    //         }
+    //     }
+    // }
 }
 
 impl fmt::Display for Lion {

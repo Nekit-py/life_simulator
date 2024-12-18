@@ -179,24 +179,46 @@ impl Default for Entity {
 #[derive(Debug)]
 pub struct Entities {
     collection: HashMap<Point, Entity>,
+    animals: u8,
 }
 
 impl Entities {
     pub fn new(collection: HashMap<Point, Entity>) -> Self {
-        Self { collection }
+        Self {
+            collection,
+            animals: 0,
+        }
     }
 
     pub fn pop(&mut self, point: &Point) -> Entity {
-        self.collection.remove(point).unwrap()
+        let entity = self.collection.remove(point).unwrap();
+        match entity {
+            Entity::Boar(_) | Entity::Lion(_) => self.animals = self.animals.saturating_sub(1),
+            _ => (),
+        }
+        entity
+    }
+
+    //Уменьшает щетчик животных, когда животное умерло
+    pub fn animal_died(&mut self) {
+        self.animals = self.animals.saturating_sub(1)
     }
 
     pub fn add(&mut self, entity: Entity) {
         let point_key = entity.get_position();
+        match entity {
+            Entity::Boar(_) | Entity::Lion(_) => self.animals = self.animals.saturating_add(1),
+            _ => (),
+        }
         self.collection.insert(point_key, entity);
     }
 
     pub fn get(&self, point: &Point) -> Option<&Entity> {
-        println!("Длина набора сущностей: {}", self.collection.len());
+        // println!("Длина набора сущностей: {}", self.collection.len());
         self.collection.get(point)
+    }
+
+    pub fn total_animals(&self) -> u8 {
+        self.animals
     }
 }

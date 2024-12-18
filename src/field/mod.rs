@@ -3,6 +3,11 @@ pub mod traits;
 
 use crate::entities::{Entities, Entity};
 use crate::traits::{Action, Health, Movable, Positionable};
+use crossterm::{
+    event::KeyCode,
+    terminal::{self, ClearType},
+    ExecutableCommand,
+};
 use entities::animals::{Boar, Lion, BOAR_VIEW, LION_VIEW};
 use entities::food::{Grass, Meat, GRASS_VIEW, MEAT_VIEW};
 use entities::other::{Virus, Wasteland, VIRUS_VIEW, WASTELAND_VIEW};
@@ -56,22 +61,23 @@ impl Field {
     ///Создание поля заполненными случайными сущностями
     pub fn new(height: usize, width: usize) -> Self {
         let mut rng = thread_rng();
-        let mut matrix: Vec<Vec<Entity>> = vec![];
 
-        for y in 0..height {
-            let mut row = vec![];
-            for x in 0..width {
-                let point = Point::new(x, y);
-                match rng.gen_range(1..=100) {
-                    1..=3 => row.push(Entity::Virus(Virus::new(point))),
-                    10..=14 => row.push(Entity::Lion(Lion::new(point))),
-                    18..=35 => row.push(Entity::Boar(Boar::new(point))),
-                    41..=80 => row.push(Entity::Grass(Grass::new(point))),
-                    _ => row.push(Entity::Wasteland(Wasteland::new(point))),
-                }
-            }
-            matrix.push(row);
-        }
+        let matrix: Vec<Vec<Entity>> = (0..height)
+            .map(|y| {
+                (0..width)
+                    .map(|x| {
+                        let point = Point::new(x, y);
+                        match rng.gen_range(1..=100) {
+                            1..=3 => Entity::Virus(Virus::new(point)),
+                            10..=14 => Entity::Lion(Lion::new(point)),
+                            18..=35 => Entity::Boar(Boar::new(point)),
+                            41..=80 => Entity::Grass(Grass::new(point)),
+                            _ => Entity::Wasteland(Wasteland::new(point)),
+                        }
+                    })
+                    .collect()
+            })
+            .collect();
 
         Self {
             height,
@@ -79,25 +85,54 @@ impl Field {
             matrix,
         }
     }
+    // let mut matrix: Vec<Vec<Entity>> = vec![];
+    //
+    // for y in 0..height {
+    //     let mut row = vec![];
+    //     for x in 0..width {
+    //         let point = Point::new(x, y);
+    //         match rng.gen_range(1..=100) {
+    //             1..=3 => row.push(Entity::Virus(Virus::new(point))),
+    //             10..=14 => row.push(Entity::Lion(Lion::new(point))),
+    //             18..=35 => row.push(Entity::Boar(Boar::new(point))),
+    //             41..=80 => row.push(Entity::Grass(Grass::new(point))),
+    //             _ => row.push(Entity::Wasteland(Wasteland::new(point))),
+    //         }
+    //     }
+    //     matrix.push(row);
+    // }
+    //
+    // Self {
+    //     height,
+    //     width,
+    //     matrix,
+    // }
+    // }
 
     pub fn get_entities(&self) -> Entities {
-        let mut collection = HashMap::new();
+        let mut entities = Entities::new(HashMap::new());
         for y in 0..self.height {
             for x in 0..self.width {
-                collection.insert(Point::new(x, y), self.matrix[y][x].clone());
+                entities.add(self.matrix[y][x].clone());
             }
         }
-        Entities::new(collection)
+        entities
     }
 
-    pub fn simulate(&mut self, entities: &mut Entities) {
-        for y in 0..self.height {
-            println!("{}", self);
-            {
-                let delay = time::Duration::from_millis(300);
-                thread::sleep(delay);
-            }
+    pub fn simulate(&mut self, entities: &mut Entities) -> Result<(), std::io::Error> {
+        // let mut stdout = std::io::stdout();
+        // terminal::enable_raw_mode()?;
+        let delay = time::Duration::from_millis(50);
 
+        {
+            thread::sleep(delay);
+            println!("{}", self);
+        }
+        for y in 0..self.height {
+            // {
+            //     thread::sleep(delay);
+            //     println!("{}", self);
+            // }
             for x in 0..self.width {
                 //получаем текущую точку
                 let point = Point::new(x, y);
@@ -127,6 +162,7 @@ impl Field {
                             let dead_entity_position = entity.get_position();
                             let (to_x, to_y) = dead_entity_position.coords();
                             self.matrix[to_y][to_x] = wasteland;
+                            entities.animal_died();
                             //Обновляем мапу заместив удаленную сущность на пустырь
                             entities.add(Entity::Wasteland(Wasteland::new(dead_entity_position)));
                         }
@@ -136,7 +172,9 @@ impl Field {
                     entities.add(entity);
                 }
             }
+            // stdout.execute(terminal::Clear(ClearType::All))?;
         }
+        Ok(())
     }
 }
 

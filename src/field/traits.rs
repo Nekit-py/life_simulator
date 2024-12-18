@@ -93,43 +93,67 @@ pub trait LookAround: Positionable + Tracker {
         width: usize,
         entities: &Entities,
     ) -> Option<Point> {
-        //Возможные направления
-        let mut available_points: Vec<Point> = Vec::with_capacity(4);
-        //Текущая точка животного
         let cur_pos = self.get_position();
-        //текущие координаты животного
         let (cur_x, cur_y) = cur_pos.coords();
 
-        if cur_y > 0 {
-            available_points.push(Point::new(cur_x, cur_y - 1));
-        }
+        // Собираем доступные точки, используя итераторы
+        let available_points: Vec<Point> = [
+            (cur_x, cur_y.saturating_sub(1)), // вверх
+            (cur_x, cur_y + 1),               // вниз
+            (cur_x.saturating_sub(1), cur_y), // влево
+            (cur_x + 1, cur_y),               // вправо
+        ]
+        .iter()
+        .filter(|&&(x, y)| x < width && y < height) // Проверяем границы
+        .map(|&(x, y)| Point::new(x, y)) // Преобразуем к Point
+        .collect();
 
-        if cur_y < height - 1 {
-            // Индексация начинается с 0
-            available_points.push(Point::new(cur_x, cur_y + 1));
-        }
-
-        // Проверка по оси X (ширина)
-        if cur_x > 0 {
-            available_points.push(Point::new(cur_x - 1, cur_y));
-        }
-        if cur_x < width - 1 {
-            // Индексация начинается с 0
-            available_points.push(Point::new(cur_x + 1, cur_y));
-        }
-
-        println!("Доступные точки для хода: {:?}", &available_points);
-        match self.choose_priority_point(available_points, entities) {
-            Some(point_to_move) => {
-                println!("Выбранная точка для хода: {:?}", point_to_move);
-                Some(point_to_move)
-            }
-            _ => {
-                println!("Нет доступных ходов");
-                None
-            }
-        }
+        // Выбираем приоритетную точку
+        self.choose_priority_point(available_points, entities)
     }
+    // fn calculate_move(
+    //     &mut self,
+    //     height: usize,
+    //     width: usize,
+    //     entities: &Entities,
+    // ) -> Option<Point> {
+    //     //Возможные направления
+    //     let mut available_points: Vec<Point> = Vec::with_capacity(4);
+    //     //Текущая точка животного
+    //     let cur_pos = self.get_position();
+    //     //текущие координаты животного
+    //     let (cur_x, cur_y) = cur_pos.coords();
+    //
+    //     if cur_y > 0 {
+    //         available_points.push(Point::new(cur_x, cur_y - 1));
+    //     }
+    //
+    //     if cur_y < height - 1 {
+    //         // Индексация начинается с 0
+    //         available_points.push(Point::new(cur_x, cur_y + 1));
+    //     }
+    //
+    //     // Проверка по оси X (ширина)
+    //     if cur_x > 0 {
+    //         available_points.push(Point::new(cur_x - 1, cur_y));
+    //     }
+    //     if cur_x < width - 1 {
+    //         // Индексация начинается с 0
+    //         available_points.push(Point::new(cur_x + 1, cur_y));
+    //     }
+    //
+    //     // println!("Доступные точки для хода: {:?}", &available_points);
+    //     match self.choose_priority_point(available_points, entities) {
+    //         Some(point_to_move) => {
+    //             // println!("Выбранная точка для хода: {:?}", point_to_move);
+    //             Some(point_to_move)
+    //         }
+    //         _ => {
+    //             // println!("Нет доступных ходов");
+    //             None
+    //         }
+    //     }
+    // }
 
     /// В приоритете идем к еде
     /// TODO: Постараться убрать дубль реализации
