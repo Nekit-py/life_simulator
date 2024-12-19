@@ -53,7 +53,11 @@ impl LookAround for Virus {
         None
     }
 }
-impl Movable for Virus {}
+impl Movable for Virus {
+    fn is_moved(&self) -> bool {false}
+
+    fn move_allowed(&mut self, allow: bool) {}
+}
 
 impl Action for Wasteland {}
 impl LookAround for Wasteland {
@@ -65,7 +69,11 @@ impl LookAround for Wasteland {
         None
     }
 }
-impl Movable for Wasteland {}
+impl Movable for Wasteland {
+    fn is_moved(&self) -> bool {false}
+
+    fn move_allowed(&mut self, allow: bool) {}
+}
 
 impl Tracker for Wasteland {
     fn reset_track(&mut self) {}

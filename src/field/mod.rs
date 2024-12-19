@@ -69,9 +69,10 @@ impl Field {
                         let point = Point::new(x, y);
                         match rng.gen_range(1..=100) {
                             1..=3 => Entity::Virus(Virus::new(point)),
-                            10..=14 => Entity::Lion(Lion::new(point)),
-                            18..=35 => Entity::Boar(Boar::new(point)),
+                            10..=12 => Entity::Lion(Lion::new(point)),
+                            18..=40 => Entity::Boar(Boar::new(point)),
                             41..=80 => Entity::Grass(Grass::new(point)),
+                            85..=90 => Entity::Meat(Meat::new(point)),
                             _ => Entity::Wasteland(Wasteland::new(point)),
                         }
                     })
@@ -85,29 +86,6 @@ impl Field {
             matrix,
         }
     }
-    // let mut matrix: Vec<Vec<Entity>> = vec![];
-    //
-    // for y in 0..height {
-    //     let mut row = vec![];
-    //     for x in 0..width {
-    //         let point = Point::new(x, y);
-    //         match rng.gen_range(1..=100) {
-    //             1..=3 => row.push(Entity::Virus(Virus::new(point))),
-    //             10..=14 => row.push(Entity::Lion(Lion::new(point))),
-    //             18..=35 => row.push(Entity::Boar(Boar::new(point))),
-    //             41..=80 => row.push(Entity::Grass(Grass::new(point))),
-    //             _ => row.push(Entity::Wasteland(Wasteland::new(point))),
-    //         }
-    //     }
-    //     matrix.push(row);
-    // }
-    //
-    // Self {
-    //     height,
-    //     width,
-    //     matrix,
-    // }
-    // }
 
     pub fn get_entities(&self) -> Entities {
         let mut entities = Entities::new(HashMap::new());
@@ -163,8 +141,8 @@ impl Field {
                             let (to_x, to_y) = dead_entity_position.coords();
                             self.matrix[to_y][to_x] = wasteland;
                             entities.animal_died();
-                            //Обновляем мапу заместив удаленную сущность на пустырь
-                            entities.add(Entity::Wasteland(Wasteland::new(dead_entity_position)));
+                            //Обновляем мапу заместив мертвое животное на мясо
+                            entities.add(Entity::Meat(Meat::new(dead_entity_position)));
                         }
                         None => {}
                     }

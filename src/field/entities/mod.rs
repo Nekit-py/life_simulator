@@ -107,7 +107,29 @@ impl Action for Entity {
     }
 }
 
-impl Movable for Entity {}
+impl Movable for Entity {
+    fn is_moved(&self) -> bool {
+        match self {
+            Entity::Boar(boar) => boar.is_moved(),
+            Entity::Lion(lion) => lion.is_moved(),
+            Entity::Meat(meat) => meat.is_moved(),
+            Entity::Grass(grass) => grass.is_moved(),
+            Entity::Wasteland(wasteland) => wasteland.is_moved(),
+            Entity::Virus(virus) => virus.is_moved(),
+        }
+    }
+
+    fn move_allowed(&mut self, allow: bool) {
+        match self {
+            Entity::Boar(boar) => boar.move_allowed(allow),
+            Entity::Lion(lion) => lion.move_allowed(allow),
+            Entity::Meat(meat) => meat.move_allowed(allow),
+            Entity::Grass(grass) => grass.move_allowed(allow),
+            Entity::Wasteland(wasteland) => wasteland.move_allowed(allow),
+            Entity::Virus(virus) => virus.move_allowed(allow),
+        }
+    }
+}
 
 impl Health for Entity {
     fn is_alive(&self) -> Option<bool> {

@@ -101,7 +101,12 @@ impl Tracker for Meat {
     }
 }
 
-impl Movable for Meat {}
+impl Movable for Meat {
+
+    fn is_moved(&self) -> bool {false}
+
+    fn move_allowed(&mut self, allow: bool) {}
+}
 impl Action for Grass {}
 impl LookAround for Grass {
     fn choose_priority_point(
@@ -119,4 +124,8 @@ impl Tracker for Grass {
         None
     }
 }
-impl Movable for Grass {}
+impl Movable for Grass {
+    fn is_moved(&self) -> bool {false}
+
+    fn move_allowed(&mut self, allow: bool) {}
+}
