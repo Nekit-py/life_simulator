@@ -91,14 +91,14 @@ impl LookAround for Entity {
 }
 
 impl Action for Entity {
-    fn action(&mut self, height: usize, width: usize, entities: &Entities) {
+    fn action(&mut self, height: usize, width: usize, entities: &mut Entities) {
         match self {
             Entity::Boar(boar) => boar.action(height, width, entities),
             Entity::Lion(lion) => lion.action(height, width, entities),
             _ => {}
         }
     }
-    fn calculate_move_effects(&mut self, arrival_point: Option<Point>, entities: &Entities) {
+    fn calculate_move_effects(&mut self, arrival_point: Option<Point>, entities: &mut Entities) {
         match self {
             Entity::Boar(boar) => boar.calculate_move_effects(arrival_point, entities),
             Entity::Lion(lion) => lion.calculate_move_effects(arrival_point, entities),
@@ -236,7 +236,6 @@ impl Entities {
     }
 
     pub fn get(&self, point: &Point) -> Option<&Entity> {
-        // println!("Длина набора сущностей: {}", self.collection.len());
         self.collection.get(point)
     }
 

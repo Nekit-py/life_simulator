@@ -169,7 +169,7 @@ impl Positionable for Boar {
 
 impl Action for Boar {
     ///Рассчет последствий хода (голодаем получаем урон и т.п.)
-    fn calculate_move_effects(&mut self, arrival_point: Option<Point>, entities: &Entities) {
+    fn calculate_move_effects(&mut self, arrival_point: Option<Point>, entities: &mut Entities) {
         if let Some(point) = arrival_point {
             if let Some(arrival_entity) = entities.get(&point) {
                 match arrival_entity.view() {
@@ -191,6 +191,8 @@ impl Action for Boar {
             self.take_damage(None);
         } else if self.is_fed() {
             self.heal();
+        } else if !self.is_alive().unwrap() {
+            entities.animal_died()
         }
     }
 }
@@ -336,11 +338,16 @@ impl Positionable for Lion {
 }
 
 impl Action for Lion {
-    fn calculate_move_effects(&mut self, arrival_point: Option<Point>, entities: &Entities) {
+    // fn calculate_move_effects(&mut self, arrival_point: Option<Point>, entities: &Entities) {
+    fn calculate_move_effects(&mut self, arrival_point: Option<Point>, entities: &mut Entities) {
         if let Some(point) = arrival_point {
             if let Some(arrival_entity) = entities.get(&point) {
                 match arrival_entity.view() {
-                    BOAR_VIEW | MEAT_VIEW => self.eat(),
+                    MEAT_VIEW => self.eat(),
+                    BOAR_VIEW => {
+                        self.eat();
+                        entities.animal_died();
+                    }
                     WASTELAND_VIEW => self.starve(),
                     VIRUS_VIEW => {
                         self.starve();
@@ -358,6 +365,8 @@ impl Action for Lion {
             self.take_damage(None);
         } else if self.is_fed() {
             self.heal();
+        } else if !self.is_alive().unwrap() {
+            entities.animal_died()
         }
     }
 }

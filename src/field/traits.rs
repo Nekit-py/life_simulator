@@ -8,7 +8,8 @@ pub trait Positionable {
 }
 
 pub trait Action: Movable + std::fmt::Display {
-    fn action(&mut self, height: usize, width: usize, entities: &Entities) {
+    // fn action(&mut self, height: usize, width: usize, entities: &Entities) {
+    fn action(&mut self, height: usize, width: usize, entities: &mut Entities) {
         if !self.is_moved() {
             let arrival_point = self.move_to(height, width, entities);
             self.calculate_move_effects(arrival_point, entities);
@@ -18,7 +19,8 @@ pub trait Action: Movable + std::fmt::Display {
         }
     }
 
-    fn calculate_move_effects(&mut self, arrival_point: Option<Point>, entities: &Entities) {}
+    // fn calculate_move_effects(&mut self, arrival_point: Option<Point>, entities: &Entities) {}
+    fn calculate_move_effects(&mut self, arrival_point: Option<Point>, entities: &mut Entities) {}
 }
 
 pub trait Satiety {

@@ -98,27 +98,20 @@ impl Field {
     }
 
     pub fn simulate(&mut self, entities: &mut Entities) -> Result<(), std::io::Error> {
-        // let mut stdout = std::io::stdout();
-        // terminal::enable_raw_mode()?;
-        let delay = time::Duration::from_millis(50);
+        let delay = time::Duration::from_millis(80);
 
         {
             thread::sleep(delay);
             println!("{}", self);
         }
         for y in 0..self.height {
-            // {
-            //     thread::sleep(delay);
-            //     println!("{}", self);
-            // }
             for x in 0..self.width {
                 //получаем текущую точку
                 let point = Point::new(x, y);
                 //Получаем сущность по координатам (точке)
                 let mut entity = entities.pop(&point);
-                let entity_view = entity.view();
-
-                if entity_view == BOAR_VIEW || entity_view == LION_VIEW {
+                match entity.view() {
+                    BOAR_VIEW | LION_VIEW => {
                     //Мутируем сущность совершая действие
                     entity.action(self.height, self.width, entities);
                     //Создаем пустое поле на месте текущей точки
@@ -140,17 +133,15 @@ impl Field {
                             let dead_entity_position = entity.get_position();
                             let (to_x, to_y) = dead_entity_position.coords();
                             self.matrix[to_y][to_x] = wasteland;
-                            entities.animal_died();
                             //Обновляем мапу заместив мертвое животное на мясо
                             entities.add(Entity::Meat(Meat::new(dead_entity_position)));
                         }
                         None => {}
                     }
-                } else {
-                    entities.add(entity);
+                }
+                    _ => entities.add(entity),
                 }
             }
-            // stdout.execute(terminal::Clear(ClearType::All))?;
         }
         Ok(())
     }

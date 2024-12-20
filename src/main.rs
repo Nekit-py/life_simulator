@@ -52,6 +52,7 @@ fn run() -> Result<(), std::io::Error> {
     stdout.execute(terminal::Clear(ClearType::All))?;
     while entities.total_animals() > 0 {
         stdout.execute(terminal::Clear(ClearType::All))?;
+        println!("Животных на поле: {}", entities.total_animals());
         field.simulate(&mut entities)?;
         stdout.flush()?;
 
