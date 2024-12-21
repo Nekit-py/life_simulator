@@ -13,7 +13,7 @@ use other::{Virus, Wasteland};
 use core::option::Option;
 use std::{collections::HashMap, fmt};
 
-use super::traits::{Health, LookAround, Tracker};
+use super::traits::{Health, LookAround, Satiety, Tracker};
 
 #[derive(Debug, Clone)]
 pub enum Entity {
@@ -127,6 +127,56 @@ impl Movable for Entity {
             Entity::Grass(grass) => grass.move_allowed(allow),
             Entity::Wasteland(wasteland) => wasteland.move_allowed(allow),
             Entity::Virus(virus) => virus.move_allowed(allow),
+        }
+    }
+}
+
+impl Satiety for Entity {
+    fn get_hunger(&self) -> u8 {
+        match self {
+            Entity::Boar(boar) => boar.get_hunger(),
+            Entity::Lion(lion) => lion.get_hunger(),
+            _ => 0,
+        }
+    }
+
+    fn set_hunger(&mut self, hunger: u8) {
+        match self {
+            Entity::Boar(boar) => boar.set_hunger(hunger),
+            Entity::Lion(lion) => lion.set_hunger(hunger),
+            _ => (),
+        }
+    }
+
+    fn starve(&mut self) {
+        match self {
+            Entity::Boar(boar) => boar.starve(),
+            Entity::Lion(lion) => lion.starve(),
+            _ => (),
+        }
+    }
+
+    fn eat(&mut self) {
+        match self {
+            Entity::Boar(boar) => boar.eat(),
+            Entity::Lion(lion) => lion.eat(),
+            _ => (),
+        }
+    }
+
+    fn is_hungry(&self) -> bool {
+        match self {
+            Entity::Boar(boar) => boar.is_hungry(),
+            Entity::Lion(lion) => lion.is_hungry(),
+            _ => false,
+        }
+    }
+
+    fn is_fed(&self) -> bool {
+        match self {
+            Entity::Boar(boar) => boar.is_fed(),
+            Entity::Lion(lion) => lion.is_fed(),
+            _ => false,
         }
     }
 }

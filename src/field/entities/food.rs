@@ -1,6 +1,6 @@
 use crate::entities::Entities;
 use crate::field::Point;
-use crate::traits::{Action, LookAround, Movable, Positionable, Tracker};
+use crate::traits::{Action, Health, LookAround, Movable, Positionable, Satiety, Tracker};
 use std::fmt;
 
 pub const MEAT_VIEW: char = '🍖';
@@ -32,6 +32,36 @@ impl Meat {
 
     pub fn view(&self) -> char {
         self.0.view
+    }
+}
+
+impl Satiety for Meat {
+    fn get_hunger(&self) -> u8 {
+        0
+    }
+
+    fn set_hunger(&mut self, hunger: u8) {}
+
+    fn is_hungry(&self) -> bool {
+        false
+    }
+
+    fn is_fed(&self) -> bool {
+        false
+    }
+}
+
+impl Health for Meat {
+    fn get_health(&self) -> u8 {
+        0
+    }
+
+    fn set_health(&mut self, health: u8) {}
+
+    fn heal(&mut self) {}
+
+    fn is_alive(&self) -> Option<bool> {
+        None
     }
 }
 
@@ -83,7 +113,36 @@ impl Positionable for Grass {
     }
 }
 
-impl Action for Meat {}
+impl Satiety for Grass {
+    fn get_hunger(&self) -> u8 {
+        0
+    }
+
+    fn set_hunger(&mut self, hunger: u8) {}
+
+    fn is_hungry(&self) -> bool {
+        false
+    }
+
+    fn is_fed(&self) -> bool {
+        false
+    }
+}
+
+impl Health for Grass {
+    fn get_health(&self) -> u8 {
+        0
+    }
+
+    fn set_health(&mut self, health: u8) {}
+
+    fn heal(&mut self) {}
+
+    fn is_alive(&self) -> Option<bool> {
+        None
+    }
+}
+
 impl LookAround for Meat {
     fn choose_priority_point(
         &mut self,
@@ -102,12 +161,14 @@ impl Tracker for Meat {
 }
 
 impl Movable for Meat {
-
-    fn is_moved(&self) -> bool {false}
+    fn is_moved(&self) -> bool {
+        false
+    }
 
     fn move_allowed(&mut self, allow: bool) {}
 }
-impl Action for Grass {}
+impl Action for Meat {}
+
 impl LookAround for Grass {
     fn choose_priority_point(
         &mut self,
@@ -125,7 +186,11 @@ impl Tracker for Grass {
     }
 }
 impl Movable for Grass {
-    fn is_moved(&self) -> bool {false}
+    fn is_moved(&self) -> bool {
+        false
+    }
 
     fn move_allowed(&mut self, allow: bool) {}
 }
+
+impl Action for Grass {}

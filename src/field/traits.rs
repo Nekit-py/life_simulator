@@ -7,22 +7,6 @@ pub trait Positionable {
     fn set_position(&mut self, point: Point);
 }
 
-pub trait Action: Movable + std::fmt::Display {
-    // fn action(&mut self, height: usize, width: usize, entities: &Entities) {
-    fn action(&mut self, height: usize, width: usize, entities: &mut Entities) {
-        if !self.is_moved() {
-            let arrival_point = self.move_to(height, width, entities);
-            self.calculate_move_effects(arrival_point, entities);
-            self.move_allowed(false);
-        } else {
-            self.move_allowed(true);
-        }
-    }
-
-    // fn calculate_move_effects(&mut self, arrival_point: Option<Point>, entities: &Entities) {}
-    fn calculate_move_effects(&mut self, arrival_point: Option<Point>, entities: &mut Entities) {}
-}
-
 pub trait Satiety {
     fn get_hunger(&self) -> u8;
 
@@ -73,6 +57,40 @@ pub trait Tracker {
     fn track_contains(&self, point: &Point) -> Option<bool>;
 }
 
+///Проверка возможных направлений движения
+pub trait LookAround: Positionable + Tracker {
+    fn calculate_move(
+        &mut self,
+        height: usize,
+        width: usize,
+        entities: &Entities,
+    ) -> Option<Point> {
+        let cur_pos = self.get_position();
+        let (cur_x, cur_y) = cur_pos.coords();
+
+        // Собираем доступные точки, используя итераторы
+        let available_points: Vec<Point> = [
+            (cur_x, cur_y.saturating_sub(1)), // вверх
+            (cur_x, cur_y + 1),               // вниз
+            (cur_x.saturating_sub(1), cur_y), // влево
+            (cur_x + 1, cur_y),               // вправо
+        ]
+            .iter()
+            .filter(|&&(x, y)| x < width && y < height) // Проверяем границы
+            .map(|&(x, y)| Point::new(x, y)) // Преобразуем к Point
+            .collect();
+
+        // Выбираем приоритетную точку
+        self.choose_priority_point(available_points, entities)
+    }
+    /// В приоритете идем к еде
+    fn choose_priority_point(
+        &mut self,
+        available_points: Vec<Point>,
+        entities: &Entities,
+    ) -> Option<Point>;
+}
+
 pub trait Movable: LookAround {
     ///Следование в выбранном направлении на 1 клетку
     ///Должен проверять, что есть в области видимостьи:
@@ -98,37 +116,27 @@ pub trait Movable: LookAround {
     fn move_allowed(&mut self, allow: bool);
 }
 
-///Проверка возможных направлений движения
-pub trait LookAround: Positionable + Tracker {
-    fn calculate_move(
-        &mut self,
-        height: usize,
-        width: usize,
-        entities: &Entities,
-    ) -> Option<Point> {
-        let cur_pos = self.get_position();
-        let (cur_x, cur_y) = cur_pos.coords();
-
-        // Собираем доступные точки, используя итераторы
-        let available_points: Vec<Point> = [
-            (cur_x, cur_y.saturating_sub(1)), // вверх
-            (cur_x, cur_y + 1),               // вниз
-            (cur_x.saturating_sub(1), cur_y), // влево
-            (cur_x + 1, cur_y),               // вправо
-        ]
-        .iter()
-        .filter(|&&(x, y)| x < width && y < height) // Проверяем границы
-        .map(|&(x, y)| Point::new(x, y)) // Преобразуем к Point
-        .collect();
-
-        // Выбираем приоритетную точку
-        self.choose_priority_point(available_points, entities)
+pub trait Action: Movable  + Health + Satiety + std::fmt::Display {
+    fn action(&mut self, height: usize, width: usize, entities: &mut Entities) {
+        if !self.is_moved() {
+            let arrival_point = self.move_to(height, width, entities);
+            self.calculate_move_effects(arrival_point, entities);
+            self.move_allowed(false);
+        } else {
+            self.move_allowed(true);
+        }
     }
-    /// В приоритете идем к еде
-    /// TODO: Постараться убрать дубль реализации
-    fn choose_priority_point(
-        &mut self,
-        available_points: Vec<Point>,
-        entities: &Entities,
-    ) -> Option<Point>;
+
+    /// Общая логика для голода и исцеления
+    fn life_cycle(&mut self, entities: &mut Entities) {
+        if self.is_hungry() {
+            self.take_damage(None);
+        } else if self.is_fed() {
+            self.heal();
+        } else if !self.is_alive().unwrap() {
+            entities.animal_died()
+        }
+    }
+
+    fn calculate_move_effects(&mut self, arrival_point: Option<Point>, entities: &mut Entities) {}
 }

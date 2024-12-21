@@ -1,6 +1,6 @@
 use crate::entities::Entities;
 use crate::field::Point;
-use crate::traits::{Action, LookAround, Movable, Positionable, Tracker};
+use crate::traits::{Action, Health, LookAround, Movable, Positionable, Satiety, Tracker};
 use std::fmt;
 
 pub const VIRUS_VIEW: char = '🦠';
@@ -35,6 +35,36 @@ impl Virus {
     }
 }
 
+impl Satiety for Virus {
+    fn get_hunger(&self) -> u8 {
+        0
+    }
+
+    fn set_hunger(&mut self, hunger: u8) {}
+
+    fn is_hungry(&self) -> bool {
+        false
+    }
+
+    fn is_fed(&self) -> bool {
+        false
+    }
+}
+
+impl Health for Virus {
+    fn get_health(&self) -> u8 {
+        0
+    }
+
+    fn set_health(&mut self, health: u8) {}
+
+    fn heal(&mut self) {}
+
+    fn is_alive(&self) -> Option<bool> {
+        None
+    }
+}
+
 impl Tracker for Virus {
     fn reset_track(&mut self) {}
     fn insert_point(&mut self, point: Point) {}
@@ -54,7 +84,9 @@ impl LookAround for Virus {
     }
 }
 impl Movable for Virus {
-    fn is_moved(&self) -> bool {false}
+    fn is_moved(&self) -> bool {
+        false
+    }
 
     fn move_allowed(&mut self, allow: bool) {}
 }
@@ -70,7 +102,9 @@ impl LookAround for Wasteland {
     }
 }
 impl Movable for Wasteland {
-    fn is_moved(&self) -> bool {false}
+    fn is_moved(&self) -> bool {
+        false
+    }
 
     fn move_allowed(&mut self, allow: bool) {}
 }
@@ -122,6 +156,36 @@ impl Positionable for Wasteland {
 
     fn set_position(&mut self, point: Point) {
         self.0.position = point;
+    }
+}
+
+impl Satiety for Wasteland {
+    fn get_hunger(&self) -> u8 {
+        0
+    }
+
+    fn set_hunger(&mut self, hunger: u8) {}
+
+    fn is_hungry(&self) -> bool {
+        false
+    }
+
+    fn is_fed(&self) -> bool {
+        false
+    }
+}
+
+impl Health for Wasteland {
+    fn get_health(&self) -> u8 {
+        0
+    }
+
+    fn set_health(&mut self, health: u8) {}
+
+    fn heal(&mut self) {}
+
+    fn is_alive(&self) -> Option<bool> {
+        None
     }
 }
 

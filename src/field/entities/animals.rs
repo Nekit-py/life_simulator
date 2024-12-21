@@ -12,6 +12,8 @@ use super::Entities;
 
 pub const BOAR_VIEW: char = '🐗';
 pub const LION_VIEW: char = '🦁';
+const TRACK_LIMIT: usize = 3;
+const MAX_AVAILABLE_POINTS: usize = 4;
 
 ///Абстрактная структура животное
 #[derive(Debug, Default, Clone)]
@@ -21,7 +23,7 @@ struct Animal {
     health: u8,
     view: char,
     track: HashSet<Point>,
-    moved:bool,
+    moved: bool,
     position: Point,
 }
 
@@ -38,7 +40,7 @@ pub struct Boar(Animal);
 
 impl Boar {
     pub fn new(position: Point) -> Self {
-        let mut track = HashSet::with_capacity(3);
+        let mut track = HashSet::with_capacity(TRACK_LIMIT);
         track.insert(position);
 
         Boar(Animal {
@@ -65,7 +67,7 @@ impl LookAround for Boar {
             return None;
         }
 
-        let mut empty_cells = Vec::with_capacity(4);
+        let mut empty_cells = Vec::with_capacity(MAX_AVAILABLE_POINTS);
 
         //Если из доступных точек появляется еда, то сразу ее возвращаем,
         //иначе копим вектор доступных для хода пустырей
@@ -76,19 +78,17 @@ impl LookAround for Boar {
 
                 match entity_view {
                     GRASS_VIEW => return Some(entity_position),
-                    WASTELAND_VIEW | VIRUS_VIEW => {
-                        match self.track_contains(&point) {
-                            Some(false) => empty_cells.push(entity_position),
-                            _ => continue,
-                        }
-                    }
+                    WASTELAND_VIEW | VIRUS_VIEW => match self.track_contains(&point) {
+                        Some(false) => empty_cells.push(entity_position),
+                        _ => continue,
+                    },
                     _ => {
                         self.insert_point(point);
                     }
                 }
             }
         }
-//Если не найдена еда и вектор пустырей заполнен хотя бы 1 элементом
+        //Если не найдена еда и вектор пустырей заполнен хотя бы 1 элементом
         if !empty_cells.is_empty() {
             let mut rng = thread_rng();
             return empty_cells.choose(&mut rng).copied();
@@ -99,7 +99,7 @@ impl LookAround for Boar {
 
 impl Tracker for Boar {
     fn reset_track(&mut self) {
-        if self.0.track.len() == 3 {
+        if self.0.track.len() >= TRACK_LIMIT {
             self.0.track.clear();
             self.0.track.insert(self.0.position);
         }
@@ -178,22 +178,14 @@ impl Action for Boar {
                     VIRUS_VIEW => {
                         self.starve();
                         self.take_damage(Some(3));
-                    },
+                    }
                     _ => {}
                 }
             }
         } else {
             self.starve();
         }
-
-        // Общая логика для голода и исцеления
-        if self.is_hungry() {
-            self.take_damage(None);
-        } else if self.is_fed() {
-            self.heal();
-        } else if !self.is_alive().unwrap() {
-            entities.animal_died()
-        }
+        self.life_cycle(entities);
     }
 }
 
@@ -209,7 +201,7 @@ pub struct Lion(Animal);
 
 impl Lion {
     pub fn new(position: Point) -> Self {
-        let mut track = HashSet::with_capacity(3);
+        let mut track = HashSet::with_capacity(TRACK_LIMIT);
         track.insert(position);
         Lion(Animal {
             view: LION_VIEW,
@@ -236,7 +228,7 @@ impl LookAround for Lion {
             return None;
         }
 
-        let mut empty_cells = Vec::with_capacity(4);
+        let mut empty_cells = Vec::with_capacity(MAX_AVAILABLE_POINTS);
 
         //Если из доступных точек появляется еда, то сразу ее возвращаем,
         //иначе копим вектор доступных для хода пустырей
@@ -247,12 +239,10 @@ impl LookAround for Lion {
 
                 match entity_view {
                     MEAT_VIEW | BOAR_VIEW => return Some(entity_position),
-                    WASTELAND_VIEW | VIRUS_VIEW => {
-                        match self.track_contains(&point) {
-                            Some(false) => empty_cells.push(entity_position),
-                            _ => continue,
-                        }
-                    }
+                    WASTELAND_VIEW | VIRUS_VIEW => match self.track_contains(&point) {
+                        Some(false) => empty_cells.push(entity_position),
+                        _ => continue,
+                    },
                     _ => {
                         self.insert_point(point);
                     }
@@ -279,7 +269,7 @@ impl Movable for Lion {
 
 impl Tracker for Lion {
     fn reset_track(&mut self) {
-        if self.0.track.len() >= 3 {
+        if self.0.track.len() >= TRACK_LIMIT {
             self.0.track.clear();
             self.0.track.insert(self.0.position);
         }
@@ -352,22 +342,14 @@ impl Action for Lion {
                     VIRUS_VIEW => {
                         self.starve();
                         self.take_damage(Some(3));
-                    },
+                    }
                     _ => {}
                 }
             }
         } else {
             self.starve();
         }
-
-        // Общая логика для голода и исцеления
-        if self.is_hungry() {
-            self.take_damage(None);
-        } else if self.is_fed() {
-            self.heal();
-        } else if !self.is_alive().unwrap() {
-            entities.animal_died()
-        }
+        self.life_cycle(entities);
     }
 }
 
